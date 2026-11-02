@@ -32,7 +32,16 @@ plan_file="/private/tmp/tingting-${environment}.tfplan"
 
 case "$action" in
   init)
-    terraform -chdir="$terraform_dir" init
+    if [[ -n "${TF_STATE_BUCKET:-}" ]]; then
+      terraform -chdir="$terraform_dir" init \
+        -backend-config="bucket=$TF_STATE_BUCKET" \
+        -backend-config="key=tingting/terraform.tfstate" \
+        -backend-config="region=${AWS_REGION:-ap-southeast-2}" \
+        -backend-config="workspace_key_prefix=tingting" \
+        -backend-config="use_lockfile=true"
+    else
+      terraform -chdir="$terraform_dir" init -backend=false
+    fi
     ;;
   plan|apply|output)
     if ! terraform -chdir="$terraform_dir" workspace select "$workspace" >/dev/null 2>&1; then

@@ -63,7 +63,20 @@ ci: bump backend
 ci: bump
 ```
 
-The backend job builds and updates the existing Lambda function. The frontend job builds the app, syncs it to the private S3 bucket, and invalidates CloudFront. Routine application deployments do not run Terraform. Terraform infrastructure changes remain a reviewed plan/apply operation using the state for the matching workspace.
+The deploy jobs use Terraform to select the `prod` workspace and read its resource outputs, then update only the frontend assets or Lambda code. They do not apply infrastructure changes. CI must use the same state as local Terraform. This repository currently has local-only state, so before enabling the jobs, create a dedicated S3 bucket for Terraform state with versioning and public access blocked, back up the local state, and migrate the existing workspaces with `terraform init -migrate-state` using the backend settings below. The workflow uses state key `tingting/terraform.tfstate`, workspace prefix `tingting`, and S3 lockfiles; do not use the frontend bucket for Terraform state. The deployment identity needs S3 state read/write and lockfile permissions in addition to the application deployment permissions.
+
+When ready to migrate, run from `infra/terraform` after setting the bucket name:
+
+```sh
+terraform init -migrate-state \
+  -backend-config="bucket=$TF_STATE_BUCKET" \
+  -backend-config="key=tingting/terraform.tfstate" \
+  -backend-config="region=ap-southeast-2" \
+  -backend-config="workspace_key_prefix=tingting" \
+  -backend-config="use_lockfile=true"
+```
+
+The `scripts/terraform-env.sh <env> init` helper continues to use local state when `TF_STATE_BUCKET` is unset, and uses the S3 backend when it is set.
 
 In GitHub, open **Settings → Secrets and variables → Actions**. Add these repository **secrets**:
 
@@ -78,9 +91,6 @@ Add these repository **variables** (not secrets):
 | Variable name | Value |
 | --- | --- |
 | `AWS_REGION` | `ap-southeast-2` |
-| `AWS_LAMBDA_FUNCTION_NAME` | Exact Lambda function name, e.g. `tingting-production` for the existing deployment or `prod-tingting` for the isolated prod stack. |
-| `AWS_FRONTEND_BUCKET` | Exact frontend S3 bucket name from the target Terraform workspace's `frontend_bucket` output. |
-| `AWS_CLOUDFRONT_DISTRIBUTION_ID` | Exact distribution ID from that workspace's `distribution_id` output. |
-| `AWS_GOOGLE_OAUTH_SECRET_ARN` | Exact secret ARN from that workspace's `google_secret_arn` output. Required only when setting `GOOGLE_OAUTH_CLIENT_JSON`. |
+| `TF_STATE_BUCKET` | Dedicated, versioned S3 bucket that stores the migrated Terraform state. |
 
-These names use uppercase with underscores so they are easy to distinguish from ordinary configuration. Set all resource variables to the same environment/workspace. The Google JSON is uploaded to AWS Secrets Manager, where the Lambda reads it; it is never put in a Vite variable or Terraform state. For AWS credentials, prefer a dedicated deploy identity with narrowly scoped permissions and rotate the key if it is exposed. The current workflow uses long-lived AWS keys because it is configured through repository secrets; OIDC can replace them later if the AWS account is configured with a GitHub trust role.
+These names use uppercase with underscores so they are easy to distinguish from ordinary configuration. The Google JSON is uploaded to AWS Secrets Manager, where the Lambda reads it; it is never put in a Vite variable or Terraform state. For AWS credentials, prefer a dedicated deploy identity with narrowly scoped permissions and rotate the key if it is exposed. The current workflow uses long-lived AWS keys because it is configured through repository secrets; OIDC can replace them later if the AWS account is configured with a GitHub trust role.
