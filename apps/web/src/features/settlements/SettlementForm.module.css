@@ -1,0 +1,7 @@
+.notice {
+  background: var(--color-soft);
+  padding: 11px 14px;
+  border-radius: 9px;
+  font-size: 0.8125rem;
+  color: var(--color-action);
+}

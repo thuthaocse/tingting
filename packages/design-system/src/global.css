@@ -1,0 +1,75 @@
+html {
+  scrollbar-gutter: stable;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-body-size);
+  color: var(--color-ink);
+  background: var(--color-bg);
+  line-height: 1.5;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+a {
+  color: var(--color-action);
+}
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+h1 {
+  font-size: var(--font-title);
+  line-height: 1.25;
+  letter-spacing: -0.035em;
+}
+h2 {
+  font-size: 1.1rem;
+}
+h3 {
+  font-size: 0.9375rem;
+}
+button:focus-visible,
+a:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--color-brand);
+  outline-offset: 3px;
+}
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 1px;
+}
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--color-action);
+  width: 18px;
+  height: 18px;
+}
+::selection {
+  background: var(--color-brand);
+}

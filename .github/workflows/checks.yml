@@ -1,0 +1,41 @@
+name: Checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run codegen
+      - run: git diff --exit-code -- apps/web/src/graphql/generated.ts
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust tests and lint
+        run: |
+          docker run --rm -v "$PWD:/app" -w /app/apps/api rust:1.99.1-slim-trixie sh -c 'rustup component add rustfmt clippy && cargo fmt --check && cargo test --locked && cargo clippy --all-targets --locked -- -D warnings'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: GraphQL integration
+        run: |
+          cp .env.example .env
+          docker compose up -d --build
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://localhost:8080/health; then break; fi
+            sleep 2
+          done
+          npm run test:integration:local
+          docker compose exec -T api lilac-api --schema | diff - graphql/schema.graphql
+      - if: always()
+        run: docker compose logs api && docker compose down -v

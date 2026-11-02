@@ -1,0 +1,31 @@
+{
+  "name": "tingting",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "packages/design-system"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @tingting/web",
+    "build": "npm run build -w @tingting/web",
+    "test": "node --test apps/web/src/domain.test.mjs apps/web/src/features/activity/utils/activity.test.mjs packages/design-system/src/utils/inputs.test.mjs apps/web/src/features/identity/utils/viewing-identity.test.mjs apps/web/src/app/utils/navigation.test.mjs scripts/render.test.mjs",
+    "typecheck": "npm run typecheck -w @tingting/web",
+    "format": "prettier --write apps/web/src packages/design-system/src scripts apps/web/codegen.ts apps/web/vite.config.ts docs README.md AGENTS.md",
+    "format:check": "prettier --check apps/web/src packages/design-system/src scripts apps/web/codegen.ts apps/web/vite.config.ts docs README.md AGENTS.md",
+    "test:integration": "node --test scripts/integration.test.mjs",
+    "codegen": "npm run codegen -w @tingting/web",
+    "seed:demo": "node scripts/seed-demo.mjs",
+    "seed:previous-day": "node scripts/seed-previous-day.mjs",
+    "test:integration:local": "node scripts/test-integration-local.mjs",
+    "seed:home": "node scripts/seed-home-demo.mjs"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^7.4.6",
+    "@graphql-codegen/typescript": "^6.1.2",
+    "graphql": "^16.14.2",
+    "prettier": "^3.9.10"
+  },
+  "engines": {
+    "node": ">=22.15.0"
+  }
+}

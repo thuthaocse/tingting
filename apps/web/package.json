@@ -1,0 +1,23 @@
+{
+  "name": "@tingting/web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "codegen": "graphql-codegen --config codegen.ts"
+  },
+  "dependencies": {
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "@tingting/design-system": "*"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vite": "^6.1.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0"
+  }
+}

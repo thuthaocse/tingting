@@ -1,0 +1,14 @@
+{
+  "name": "@tingting/design-system",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.tsx",
+    "./tokens.css": "./src/tokens.css",
+    "./global.css": "./src/global.css"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}

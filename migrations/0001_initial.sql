@@ -1,0 +1,14 @@
+CREATE TABLE admins (id uuid PRIMARY KEY, username text UNIQUE NOT NULL, password_hash text NOT NULL);
+CREATE TABLE admin_sessions (token_hash text PRIMARY KEY, admin_id uuid NOT NULL REFERENCES admins(id) ON DELETE CASCADE, expires_at timestamptz NOT NULL);
+CREATE TABLE groups (id uuid PRIMARY KEY, name text NOT NULL, description text NOT NULL DEFAULT '', token text UNIQUE NOT NULL, version integer NOT NULL DEFAULT 1, archived boolean NOT NULL DEFAULT false, created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE members (id uuid PRIMARY KEY, group_id uuid NOT NULL REFERENCES groups(id) ON DELETE CASCADE, name text NOT NULL, email text, UNIQUE(group_id,id));
+CREATE TABLE expenses (id uuid PRIMARY KEY, group_id uuid NOT NULL REFERENCES groups(id) ON DELETE CASCADE, title text NOT NULL, amount bigint NOT NULL CHECK(amount>0 AND amount<=1000000000000), payer_id uuid NOT NULL, date date NOT NULL, note text NOT NULL DEFAULT '', FOREIGN KEY(group_id,payer_id) REFERENCES members(group_id,id), UNIQUE(group_id,id));
+CREATE TABLE expense_shares (expense_id uuid NOT NULL REFERENCES expenses(id) ON DELETE CASCADE, member_id uuid NOT NULL REFERENCES members(id), amount bigint NOT NULL CHECK(amount>=0), PRIMARY KEY(expense_id,member_id));
+CREATE TABLE settlements (id uuid PRIMARY KEY, group_id uuid NOT NULL REFERENCES groups(id) ON DELETE CASCADE, from_id uuid NOT NULL, to_id uuid NOT NULL, amount bigint NOT NULL CHECK(amount>0 AND amount<=1000000000000), date date NOT NULL, note text NOT NULL DEFAULT '', FOREIGN KEY(group_id,from_id) REFERENCES members(group_id,id), FOREIGN KEY(group_id,to_id) REFERENCES members(group_id,id), CHECK(from_id<>to_id));
+CREATE TABLE activity_events (id uuid PRIMARY KEY, group_id uuid NOT NULL REFERENCES groups(id), action text NOT NULL, entity_id text, before_state jsonb, after_state jsonb, actor_admin_id uuid REFERENCES admins(id), created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE mutation_keys (group_id uuid NOT NULL REFERENCES groups(id), request_id text NOT NULL, fingerprint text NOT NULL, PRIMARY KEY(group_id,request_id));
+CREATE INDEX members_group_idx ON members(group_id);
+CREATE INDEX expenses_group_date_idx ON expenses(group_id,date DESC);
+CREATE INDEX settlements_group_date_idx ON settlements(group_id,date DESC);
+CREATE INDEX sessions_expiry_idx ON admin_sessions(expires_at);
+CREATE INDEX activity_group_idx ON activity_events(group_id,created_at DESC);

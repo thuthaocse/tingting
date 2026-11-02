@@ -1,0 +1,68 @@
+.muted {
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+}
+.formTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.notice {
+  background: var(--color-soft);
+  padding: 11px 14px;
+  border-radius: 9px;
+  font-size: 0.8125rem;
+  color: var(--color-action);
+}
+.splitList {
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.splitRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+.splitRow:last-child {
+  border: 0;
+}
+.splitRow strong {
+  margin-left: auto;
+  font-size: 0.8125rem;
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 640px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.splitRow {
+  min-width: 0;
+}
+.splitRow input {
+  flex-shrink: 0;
+  margin: 0;
+}
+.splitRow > span:not(:first-of-type) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.splitRow strong {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.formTitle {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}

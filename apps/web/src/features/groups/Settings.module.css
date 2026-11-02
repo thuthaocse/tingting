@@ -1,0 +1,18 @@
+.muted {
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+}
+.form {
+  display: grid;
+  gap: 18px;
+}
+.form small {
+  color: var(--color-muted);
+}
+.notice {
+  background: var(--color-soft);
+  padding: 11px 14px;
+  border-radius: 9px;
+  font-size: 0.8125rem;
+  color: var(--color-action);
+}

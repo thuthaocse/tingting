@@ -1,0 +1,171 @@
+type AccessGrant {
+	email: String!
+	role: String!
+}
+
+type AccountDebt {
+	groupId: String!
+	groupName: String!
+	token: String!
+	personId: String!
+	personName: String!
+	amount: Money!
+}
+
+type Balance {
+	memberId: String!
+	amount: Money!
+}
+
+input CreateGroupInput {
+	name: String!
+	description: String!
+	members: [MemberInput!]!
+}
+
+type Dashboard {
+	payable: Money!
+	receivable: Money!
+	outgoing: [AccountDebt!]!
+	incoming: [AccountDebt!]!
+	groups: [GroupSummary!]!
+}
+
+type Debt {
+	fromId: String!
+	toId: String!
+	amount: Money!
+}
+
+type Expense {
+	id: String!
+	createdOrder: String!
+	title: String!
+	amount: Money!
+	payerId: String!
+	date: String!
+	note: String!
+	shares: [Share!]!
+}
+
+input ExpenseInput {
+	id: String!
+	title: String!
+	amount: Money!
+	payerId: String!
+	date: String!
+	note: String!
+	participantIds: [String!]!
+}
+
+type Group {
+	id: String!
+	name: String!
+	description: String!
+	token: String!
+	version: Int!
+	archived: Boolean!
+	members: [Member!]!
+	expenses: [Expense!]!
+	settlements: [Settlement!]!
+	viewerMemberId: String
+	directDebts: [Debt!]!
+	simplifiedDebts: [Debt!]!
+}
+
+type GroupSummary {
+	groupId: String!
+	memberId: String
+	payable: Money!
+	receivable: Money!
+}
+
+type Member {
+	id: String!
+	name: String!
+	email: String
+}
+
+input MemberInput {
+	id: String!
+	name: String!
+	email: String
+}
+
+scalar Money
+
+type Mutation {
+	setAccessGrant(email: String!, role: String): Boolean!
+	logout: Boolean!
+	createGroup(input: CreateGroupInput!): Group!
+	updateGroup(token: String!, version: Int!, input: UpdateGroupInput!): Group!
+	saveExpense(token: String!, version: Int!, input: ExpenseInput!): Group!
+	deleteExpense(token: String!, version: Int!, id: String!): Group!
+	saveSettlement(token: String!, version: Int!, input: SettlementInput!): Group!
+	deleteSettlement(token: String!, version: Int!, id: String!): Group!
+	rotateLink(token: String!, version: Int!): Group!
+	archiveGroup(token: String!, version: Int!): Group!
+}
+
+type Query {
+	accessGrants: [AccessGrant!]!
+	me: Viewer
+	googleLoginEnabled: Boolean!
+	dashboard: Dashboard!
+	groups: [Group!]!
+	group(token: String!): Group!
+	balances(token: String!): [Balance!]!
+	debts(token: String!, simplified: Boolean! = true): [Debt!]!
+}
+
+type Settlement {
+	id: String!
+	createdOrder: String!
+	fromId: String!
+	toId: String!
+	amount: Money!
+	date: String!
+	note: String!
+}
+
+input SettlementInput {
+	id: String!
+	fromId: String!
+	toId: String!
+	amount: Money!
+	date: String!
+	note: String!
+}
+
+type Share {
+	memberId: String!
+	amount: Money!
+}
+
+input UpdateGroupInput {
+	name: String!
+	description: String!
+	members: [MemberInput!]!
+}
+
+type Viewer {
+	id: String!
+	email: String!
+	name: String!
+	isAdmin: Boolean!
+	canCreateGroups: Boolean!
+}
+
+"""
+Directs the executor to include this field or fragment only when the `if` argument is true.
+"""
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+"""
+Directs the executor to skip this field or fragment when the `if` argument is true.
+"""
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+schema {
+	query: Query
+	mutation: Mutation
+}
+

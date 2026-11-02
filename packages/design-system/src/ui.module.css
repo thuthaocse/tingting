@@ -1,0 +1,221 @@
+.button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 9px 17px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: var(--color-action);
+  color: var(--color-on-action);
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: background 0.15s;
+}
+.button:hover {
+  background: var(--color-action-hover);
+}
+.secondary {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-ink);
+}
+.secondary:hover {
+  background: var(--color-soft);
+}
+.quiet {
+  color: var(--color-action);
+  background: transparent;
+  padding: 6px 9px;
+}
+.quiet:hover {
+  background: var(--color-soft);
+}
+.danger {
+  color: var(--color-danger);
+  background: var(--color-danger-bg);
+}
+.small {
+  font-size: 0.75rem;
+  padding: 6px 9px;
+  min-height: 36px;
+}
+.field {
+  display: grid;
+  gap: 7px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.input {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  min-height: 44px;
+  min-width: 0;
+  font-weight: 400;
+}
+.help {
+  font-weight: 400;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+.avatar {
+  height: 34px;
+  width: 34px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-soft);
+  color: var(--color-action);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+.logo svg {
+  width: 37px;
+  height: 32px;
+}
+.tabs {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid var(--color-border);
+  overflow: auto;
+}
+.tab {
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 15px 4px;
+  white-space: nowrap;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+.active {
+  color: var(--color-action);
+  border-color: var(--color-action);
+  font-weight: 600;
+}
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+.dialog {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  padding: 0;
+  width: min(560px, calc(100vw - 48px));
+  max-width: calc(100vw - 48px);
+  max-height: calc(100dvh - 48px);
+  margin: auto;
+  overflow: hidden;
+  box-shadow: var(--shadow-dialog);
+}
+.dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+.dialogHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-shrink: 0;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--color-border);
+}
+.dialogHeader h2 {
+  min-width: 0;
+  font-size: 1.0625rem;
+  overflow-wrap: anywhere;
+}
+.dialogHeader button {
+  flex-shrink: 0;
+}
+.dialogBody {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 20px 24px 24px;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+.dialogBody::-webkit-scrollbar {
+  width: 6px;
+}
+.dialogBody::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-pill);
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  font-size: 0.7rem;
+  padding: 4px 9px;
+  border-radius: 99px;
+  background: var(--color-soft);
+  color: var(--color-action);
+}
+.positive {
+  background: var(--color-positive-bg);
+  color: var(--color-positive);
+}
+@media (max-width: 640px) {
+  .dialog {
+    width: 100%;
+    max-width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    border: 0;
+    border-radius: 0;
+    margin: 0;
+  }
+  .dialogHeader {
+    padding: calc(16px + env(safe-area-inset-top, 0px)) 20px 16px;
+  }
+  .dialogBody {
+    padding: 16px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+  .tabs {
+    gap: 0;
+  }
+  .tab {
+    flex: 1;
+  }
+  .logo {
+    font-size: 1.45rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+}
+
+.dialog::backdrop {
+  background: var(--color-overlay);
+  backdrop-filter: blur(3px);
+}
+.logo svg {
+  color: var(--color-action);
+}

@@ -1,0 +1,39 @@
+.form {
+  gap: 12px;
+  min-width: 0;
+}
+.memberList {
+  display: grid;
+  gap: 8px;
+  max-height: min(44dvh, 320px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding: 2px;
+  min-width: 0;
+}
+.memberRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 9px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  min-width: 0;
+  font-size: 0.875rem;
+}
+.memberRow > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.memberRow input {
+  margin: 0 0 0 auto;
+  flex-shrink: 0;
+}
+.selected {
+  border-color: var(--color-action);
+  background: var(--color-soft);
+}

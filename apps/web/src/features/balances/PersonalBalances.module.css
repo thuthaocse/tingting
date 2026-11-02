@@ -1,0 +1,135 @@
+.balances {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0 16px;
+  margin-bottom: 20px;
+  min-width: 0;
+}
+.balanceSection {
+  min-width: 0;
+}
+.balanceSection:only-child {
+  grid-column: 1/-1;
+}
+.balanceSection + .balanceSection {
+  border-left: 1px solid var(--color-border);
+  padding-left: 16px;
+  margin-left: 16px;
+}
+.balanceSection summary {
+  list-style: none;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding-block: 6px;
+  font-size: 0.8125rem;
+}
+.balanceSection summary::-webkit-details-marker {
+  display: none;
+}
+.summaryLabel {
+  min-width: 0;
+}
+.summaryMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+.summaryMeta strong {
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+.pay {
+  color: var(--color-action);
+}
+.receive {
+  color: var(--color-positive);
+}
+.count {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  border-left: 1px solid var(--color-border);
+  padding-left: 10px;
+}
+.chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--color-muted);
+  flex-shrink: 0;
+}
+.balanceSection[open] .chevron {
+  transform: rotate(180deg);
+}
+.miniDebt {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 44px;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.8125rem;
+}
+.miniDebt > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.miniDebt strong {
+  white-space: nowrap;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.settled {
+  grid-column: 1/-1;
+  padding: 12px 0;
+  font-size: 0.875rem;
+  color: var(--color-positive);
+}
+@media (max-width: 640px) {
+  .balances {
+    display: block;
+    padding: 0 12px;
+    margin-bottom: 16px;
+  }
+  .balanceSection + .balanceSection {
+    border-left: 0;
+    border-top: 1px solid var(--color-border);
+    padding-left: 0;
+    margin-left: 0;
+  }
+  .balanceSection summary {
+    font-size: 0.75rem;
+    gap: 8px;
+    min-height: 44px;
+  }
+  .summaryMeta {
+    gap: 8px;
+  }
+  .summaryMeta strong {
+    font-size: 0.8125rem;
+  }
+  .count {
+    font-size: 0.6875rem;
+    padding-left: 8px;
+  }
+  .miniDebt {
+    font-size: 0.75rem;
+    gap: 8px;
+  }
+}
+@media (max-width: 360px) {
+  .count {
+    display: none;
+  }
+}

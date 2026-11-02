@@ -1,0 +1,146 @@
+.page {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5) var(--space-7);
+}
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+.heading h1 {
+  font-size: var(--font-title);
+}
+.eyebrow {
+  color: var(--color-muted);
+  font-size: var(--font-small);
+  margin-bottom: var(--space-2);
+}
+.muted {
+  color: var(--color-muted);
+  font-size: var(--font-small);
+  margin: var(--space-2) 0 var(--space-4);
+}
+.account {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  align-items: start;
+}
+.groupCards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+.card {
+  min-width: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+.groupLink {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+.groupLink h2 {
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+.groupLink:hover {
+  color: var(--color-action);
+}
+.groupAmounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--font-small);
+  color: var(--color-muted);
+}
+.groupAmounts b {
+  color: var(--color-action);
+  white-space: nowrap;
+  margin-left: var(--space-1);
+}
+.groupAmounts span:last-child b {
+  color: var(--color-positive);
+}
+.owedBy {
+  color: var(--color-positive);
+  font-size: var(--font-small);
+  line-height: 1.6;
+  margin-top: var(--space-2);
+}
+
+.error {
+  padding: var(--space-3);
+  color: var(--color-danger);
+  background: var(--color-danger-bg);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-4);
+}
+.empty {
+  text-align: center;
+  color: var(--color-muted);
+  padding: var(--space-6) 0;
+}
+@media (max-width: 640px) {
+  .page {
+    padding: var(--space-5) var(--space-4);
+  }
+  .account,
+  .groupCards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .heading h1 {
+    font-size: 1.4rem;
+  }
+}
+
+.owedBy summary {
+  cursor: pointer;
+}
+.personDebt {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}
+.personDebt b {
+  white-space: nowrap;
+}
+
+.eyebrow {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+.groupLink h2 {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.groupLink > span {
+  flex-shrink: 0;
+}
+.card > .muted {
+  margin-bottom: 0;
+}
+.groupAmounts {
+  margin-top: var(--space-3);
+}
+.card {
+  padding-block: var(--space-3);
+}
+
+.groupCards {
+  align-items: start;
+}

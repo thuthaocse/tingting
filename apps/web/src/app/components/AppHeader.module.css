@@ -1,0 +1,110 @@
+.topbar {
+  min-height: 82px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) max(28px, calc((100vw - 1120px) / 2));
+  gap: var(--space-4);
+}
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  gap: var(--space-3);
+}
+.account {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.accountName {
+  max-width: 220px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--font-small);
+  font-weight: 600;
+}
+.actions button {
+  flex-shrink: 0;
+  min-height: 40px;
+}
+.iconButton {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  padding: 0;
+}
+.actions svg {
+  display: block;
+  flex-shrink: 0;
+}
+.mobileMenu {
+  display: none;
+}
+@media (max-width: 640px) {
+  .topbar {
+    min-height: 66px;
+    padding: var(--space-3) var(--space-4);
+    gap: var(--space-3);
+  }
+  .desktopActions {
+    display: none;
+  }
+  .mobileMenu {
+    display: block;
+    position: relative;
+  }
+  .mobileMenu summary {
+    list-style: none;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    color: var(--color-ink);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  .mobileMenu summary::-webkit-details-marker {
+    display: none;
+  }
+  .mobileMenu summary:focus-visible {
+    outline: 2px solid var(--color-action);
+    outline-offset: 2px;
+  }
+  .mobileMenu[open] summary {
+    background: var(--color-soft);
+    color: var(--color-action);
+  }
+  .menuPanel {
+    position: absolute;
+    top: calc(100% + var(--space-2));
+    right: 0;
+    width: min(300px, calc(100vw - var(--space-6)));
+    padding: var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-popover);
+    z-index: 30;
+  }
+  .menuPanel .actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  .menuPanel .account {
+    flex-basis: 100%;
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .accountName {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}

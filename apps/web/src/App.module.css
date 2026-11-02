@@ -1,0 +1,40 @@
+.shell {
+  min-height: 100dvh;
+}
+.page {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 40px 24px 90px;
+}
+.error {
+  background: var(--color-danger-bg);
+  border: 1px solid var(--color-danger-border);
+  color: var(--color-danger);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-small);
+  margin-bottom: var(--space-4);
+}
+.toast {
+  position: fixed;
+  bottom: var(--space-5);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-ink);
+  color: var(--color-on-action);
+  border-radius: var(--radius-sm);
+  z-index: 80;
+  max-width: 90vw;
+  font-size: var(--font-small);
+}
+.loading {
+  padding: var(--space-7);
+  text-align: center;
+  color: var(--color-muted);
+}
+@media (max-width: 640px) {
+  .page {
+    padding: var(--space-5) var(--space-4) 90px;
+  }
+}

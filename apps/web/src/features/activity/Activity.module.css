@@ -1,0 +1,104 @@
+.pay {
+  color: var(--color-action);
+}
+.receive {
+  color: var(--color-positive);
+}
+.date {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  padding: 22px 0 8px;
+}
+.activityRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  padding: 17px 0;
+  color: var(--color-ink);
+}
+.activityIcon {
+  height: 42px;
+  width: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--color-soft);
+  color: var(--color-action);
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.paymentIcon {
+  background: var(--color-positive-bg);
+  color: var(--color-positive);
+}
+.activityInfo {
+  flex: 1;
+  min-width: 0;
+}
+.activityInfo strong {
+  font-size: 0.875rem;
+}
+.activityInfo p {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  margin-top: 3px;
+}
+.activityAmount {
+  text-align: right;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+.activityAmount span {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--color-muted);
+  font-weight: 400;
+}
+.empty {
+  padding: 44px 16px;
+  text-align: center;
+  color: var(--color-muted);
+}
+@media (max-width: 640px) {
+  .activityRow {
+    gap: 10px;
+    padding: 15px 0;
+  }
+  .activityIcon {
+    width: 34px;
+    height: 34px;
+    font-size: 17px;
+  }
+  .activityInfo strong {
+    font-size: 0.8125rem;
+  }
+  .activityInfo p {
+    font-size: 0.7rem;
+  }
+  .activityAmount {
+    font-size: 0.8125rem;
+  }
+  .activityAmount span {
+    font-size: 0.65rem;
+  }
+}
+
+div:first-child > .date {
+  padding-top: 0;
+}
+
+.entry:last-child .activityRow {
+  border-bottom: 0;
+}
+
+.date {
+  padding-block: var(--space-3) var(--space-2);
+}
+.activityRow {
+  padding-block: var(--space-3);
+}

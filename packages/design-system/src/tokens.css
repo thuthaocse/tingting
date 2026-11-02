@@ -1,0 +1,37 @@
+:root {
+  --shadow-popover: 0 8px 24px #29233818, 0 2px 6px #2923380a;
+  --color-on-action: #fff;
+  --color-danger-border: #f6cbd0;
+  --color-overlay: #21183365;
+  --shadow-floating: 0 8px 28px #6941c644;
+  --color-brand: #c4b5fd;
+  --color-action: #6941c6;
+  --color-action-hover: #5630ad;
+  --color-bg: #f8f7fc;
+  --color-surface: #ffffff;
+  --color-ink: #292338;
+  --color-muted: #716b80;
+  --color-border: #e9e4f2;
+  --color-soft: #f0ebff;
+  --color-positive: #087550;
+  --color-positive-bg: #e8f7ef;
+  --color-danger: #b42338;
+  --color-danger-bg: #fff0f1;
+  --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+  --shadow-card: 0 4px 24px #30234e05;
+  --shadow-dialog: 0 24px 80px #29233824;
+  --font-small: 0.8125rem;
+  --font-body-size: 0.9375rem;
+  --font-title: 1.75rem;
+}

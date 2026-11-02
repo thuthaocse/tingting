@@ -1,0 +1,342 @@
+.muted {
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+}
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 24px 96px;
+}
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.heading h1 {
+  margin-bottom: 6px;
+}
+.groupIcon {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  border-radius: 16px;
+  background: var(--color-soft);
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  color: var(--color-action);
+}
+.groupHeading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.groupHeading h1 {
+  font-size: 1.6rem;
+}
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0 16px;
+}
+.identity > div {
+  width: auto;
+  min-width: 170px;
+}
+.content {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.contentInner {
+  padding: 20px;
+}
+.contentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+.debtRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 16px;
+  align-items: center;
+  min-height: 48px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.8125rem;
+}
+.debtNames {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+.debtNames span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.debtNames i {
+  font-style: normal;
+  color: var(--color-muted);
+}
+.debtRow strong {
+  white-space: nowrap;
+}
+.total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 18px;
+  font-size: 0.8125rem;
+}
+.fab {
+  position: fixed;
+  right: max(24px, calc((100vw - 960px) / 2 + 24px));
+  bottom: 28px;
+  border: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-action);
+  color: var(--color-on-action);
+  box-shadow: var(--shadow-floating);
+  font-size: 30px;
+}
+.error {
+  background: var(--color-danger-bg);
+  border: 1px solid var(--color-danger-border);
+  color: var(--color-danger);
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  margin-bottom: 18px;
+}
+.empty {
+  padding: 44px 16px;
+  text-align: center;
+  color: var(--color-muted);
+}
+.footer {
+  font-size: 0.7rem;
+  color: var(--color-muted);
+  text-align: center;
+  margin-top: 24px;
+}
+@media (max-width: 760px) {
+  .heading h1 {
+    font-size: 1.4rem;
+  }
+}
+@media (max-width: 640px) {
+  .page {
+    padding: 24px 16px 90px;
+  }
+  .heading {
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .heading h1 {
+    font-size: 1.3rem;
+  }
+  .groupHeading {
+    gap: 10px;
+  }
+  .groupHeading h1 {
+    font-size: 1.25rem;
+  }
+  .groupIcon {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+    font-size: 20px;
+  }
+  .identity {
+    margin: 18px 0 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 9px;
+    padding: 0 10px;
+    background: var(--color-surface);
+    justify-content: space-between;
+  }
+  .identity > div {
+    border: 0;
+    background: none;
+    min-width: 0;
+    max-width: 65%;
+    font-size: 0.8125rem;
+  }
+  .content {
+    border-radius: 12px;
+  }
+  .contentInner {
+    padding: 16px;
+  }
+  .contentHeader h2 {
+    font-size: 0.9375rem;
+  }
+  .debtRow {
+    gap: 8px;
+    min-height: 50px;
+    font-size: 0.75rem;
+  }
+  .debtNames {
+    gap: 5px;
+  }
+  .debtRow button {
+    padding: 6px 3px;
+    font-size: 0.7rem;
+  }
+  .fab {
+    bottom: 20px;
+    right: 20px;
+  }
+}
+@media (max-width: 640px) {
+  .heading > span {
+    display: none;
+  }
+  .groupHeading {
+    min-width: 0;
+  }
+  .groupHeading h1 {
+    overflow-wrap: anywhere;
+  }
+}
+
+.tabPanel {
+  padding-top: 20px;
+  min-width: 0;
+}
+.contentHeader {
+  flex-wrap: wrap;
+  row-gap: 8px;
+  margin-bottom: 8px;
+}
+.contentHeader h2 {
+  flex: 0 0 auto;
+}
+.switch {
+  margin-left: auto;
+  min-height: 32px;
+  white-space: nowrap;
+}
+.total {
+  margin-top: 4px;
+  padding-top: 16px;
+}
+@media (max-width: 640px) {
+  .tabPanel {
+    padding-top: 16px;
+  }
+  .contentHeader {
+    align-items: flex-start;
+  }
+  .switch {
+    gap: 6px;
+    font-size: 0.6875rem;
+    min-height: 24px;
+  }
+  .debtRow {
+    column-gap: 8px;
+  }
+  .contentInner {
+    padding: 0 16px 16px;
+  }
+}
+
+.identity > div {
+  width: 220px;
+}
+@media (max-width: 640px) {
+  .identity {
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+  .identity > div {
+    width: min(240px, 68%);
+    max-width: none;
+    min-width: 0;
+  }
+}
+
+.groupHeading {
+  min-width: 0;
+}
+.groupHeading > div:last-child {
+  min-width: 0;
+}
+.groupHeading h1 {
+  overflow-wrap: anywhere;
+}
+.groupIcon svg {
+  display: block;
+  flex-shrink: 0;
+}
+.groupActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.readOnlyDebt {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.groupActions {
+  flex-wrap: wrap;
+}
+.heading {
+  margin-bottom: var(--space-3);
+}
+.contentInner {
+  padding: 0 var(--space-4) var(--space-3);
+}
+.tabPanel {
+  padding-top: var(--space-3);
+}
+.page {
+  padding-bottom: var(--space-6);
+}
+.debtRow {
+  padding-block: var(--space-2);
+}
+@media (max-width: 640px) {
+  .page {
+    padding-bottom: var(--space-6);
+  }
+  .contentInner {
+    padding: 0 var(--space-3) var(--space-3);
+  }
+  .contentHeader {
+    align-items: center;
+  }
+  .contentHeader h2 {
+    flex: 1 1 auto;
+  }
+  .switch {
+    margin-left: 0;
+  }
+  .total {
+    padding-top: var(--space-3);
+  }
+}
+
+.withComposer {
+  padding-bottom: calc(var(--space-7) + var(--space-6) + var(--space-4));
+}
