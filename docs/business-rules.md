@@ -1,20 +1,17 @@
-# Quy tắc nghiệp vụ
+# Business rules
 
-- Chọn tên từ danh sách admin; thiết bị ghi nhớ lựa chọn theo từng nhóm.
-- Khách có link chỉ xem. Người đăng nhập Google xem tất cả nhóm và sửa giao dịch. Admin được tạo/quản lý nhóm và thành viên. Tài khoản có vai trò Chỉ tạo nhóm được tạo nhóm nhưng không có quyền quản trị. thuthao.cse@gmail.com là admin gốc, admin có thể cấp/thu hồi vai trò theo email Google.
-- Khoản chi có một người trả và ít nhất một người cùng chia. Người trả không bắt buộc tham gia chia.
-- Mặc định chia đều cho tất cả. Phần dư 1 đồng được phân bổ theo UUID tăng dần.
-- Số dư = đã trả cho khoản chi − phần chia + thanh toán đã gửi − thanh toán đã nhận.
-- Công nợ trực tiếp được bù trừ theo cặp; đơn giản hóa dùng số dư ròng của toàn nhóm.
-- Khi bật đơn giản hóa, một người thường chỉ cần trả hoặc được nhận theo số dư ròng. Khi tắt, có thể có cả hai mục. Cả hai chế độ luôn bảo toàn số dư từng người.
-- Ghi nhận thanh toán không chuyển tiền thật. Cho phép trả một phần hoặc khoản thanh toán thực tế lớn hơn đề xuất; phần vượt tạo số dư ngược chiều.
-- Sửa/xóa giao dịch tính lại toàn bộ số dư. Không cộng tiền thanh toán nợ vào tổng chi.
-- Thành viên đã có giao dịch không thể bị xóa. Nhóm lưu trữ chỉ đọc nhưng có thể mở lại bởi admin.
-- Link mới vô hiệu hóa link cũ. Tài khoản Google được liên kết với thành viên theo email đã xác minh; chọn tên chỉ đổi góc nhìn.
-
-- Hoạt động xếp theo ngày giao dịch giảm dần. Trong cùng ngày, thứ tự nhập mới nhất đứng trước, dùng bộ đếm chung cho khoản chi và thanh toán. Sửa giao dịch không thay đổi bộ đếm này; UUID không quyết định thứ tự.
-
-- Link nhóm dùng mã ngẫu nhiên 16 ký tự. Các link dài cũ vẫn hoạt động sau khi rút gọn. Khi admin chủ động đổi liên kết, cả link hiện tại và các link cũ của nhóm đều bị vô hiệu hóa.
-
-- Home tính tổng cần trả và được nhận từ nợ đã đơn giản hóa của các nhóm đang hoạt động, không bù trừ giữa các nhóm. Mở từng mục để xem người và nhóm tương ứng.
-- Email không khớp hoặc trùng nhiều thành viên: hiển thị chưa liên kết, không tuyên bố đã hết nợ. Chỉ admin cập nhật email thành viên.
+- Select a name from the member list managed by an admin; the device remembers the selection for each group.
+- Guests with a group link have read-only access. Users signed in with Google can view all groups and edit transactions. Admins can create and manage groups and members. Users with the creator role can create groups but have no administrative privileges. thuthao.cse@gmail.com is the root admin; admins can grant or revoke roles by Google account email.
+- An expense has one payer and at least one participant sharing the cost. The payer does not have to participate in the split.
+- By default, split equally among all members. Allocate remaining one-dong units in ascending UUID order.
+- Balance = expenses paid − allocated shares + payments sent − payments received.
+- Direct debts are offset within each pair; simplification uses net balances across the entire group.
+- With simplification enabled, a member generally either pays or receives according to their net balance. With it disabled, both can appear. Both modes always preserve each member's balance.
+- Recording a payment does not transfer real money. Partial payments and actual payments larger than the suggestion are allowed; any excess creates a balance in the opposite direction.
+- Editing or deleting a transaction recalculates all balances. Debt repayments do not count toward total expenses.
+- Members referenced by transactions cannot be deleted. Archived groups are read-only, but admins can reopen them.
+- Rotating a link invalidates the old link. Google accounts are linked to members by verified email; selecting a name only changes the viewing perspective.
+- Activity is sorted by transaction date, newest first. Within a date, the most recently entered transaction comes first, using a shared counter for expenses and payments. Editing a transaction does not change this counter; UUIDs do not determine the order.
+- Group links use random 16-character codes. Older, longer links continue working after shortening. When an admin explicitly rotates a link, both the current link and all older links for that group are invalidated.
+- Home totals payable and receivable use simplified debts from active groups, without offsetting across groups. Expand each section to see the corresponding people and groups.
+- If an email matches no member or multiple members, show an unlinked state rather than claiming that all debts are settled. Only admins can update member emails.

@@ -16,17 +16,17 @@ Logo (SVG), Button (primary/secondary/quiet/danger + small/disabled), Input, Fie
 
 ## Patterns
 
-Personal balances are two collapsed details/summary sections: money owed and money receivable. Expand independently for recipient/payer rows and Ghi nhận action. Hide an empty section. Show a settled state when both are empty. No large total hero.
+Personal balances are two collapsed details/summary sections: money owed and money receivable. Expand independently for recipient/payer rows and Record payment action. Hide an empty section. Show a settled state when both are empty. No large total hero.
 
-Group balances use one compact row per obligation: payer → recipient, amount, Ghi nhận. Activity uses dated receipt/payment rows. Mobile uses a floating add-expense action and full-screen forms. Admin tables become stacked editable member fields on small screens.
+Group balances use one compact row per obligation: payer → recipient, amount, Record payment. Activity uses dated receipt/payment rows. Mobile uses a floating add-expense action and full-screen forms. Admin tables become stacked editable member fields on small screens.
 
 ## Examples
 
 ```tsx
 import { Button, Field, Input } from '@tingting/design-system';
 import styles from './ExpenseForm.module.css';
-<Field label="Tên khoản chi"><Input name="title" required /></Field>
-<Button type="submit">Lưu khoản chi</Button>
+<Field label="Expense title"><Input name="title" required /></Field>
+<Button type="submit">Save expense</Button>
 ```
 
 Never use color as the only indicator. Preserve keyboard focus outlines and aria labels for icon buttons. CSS animations must respect prefers-reduced-motion. Keep shared tokens in tokens.css and component styles in CSS Modules.
@@ -41,4 +41,4 @@ MoneyInput displays comma-grouped integer amounts while editing (20,000; 1,200,0
 
 SearchSelect replaces native member selects. Type to search with or without Vietnamese accents; Arrow keys, Enter, Escape and Tab are supported. A native popover keeps the list above scrolling dialogs. Both controls are available on /design-system. Summary chevrons and header actions use consistent SVG icons.
 
-The group debt tab is labeled Khoản nợ. Month filtering uses the same styled SearchSelect as members, with Vietnamese month labels and a Tất cả thời gian option. Activity has no trailing divider or public-link explanatory footer.
+The group debt tab is labeled Debts in Vietnamese. Month filtering uses the same styled SearchSelect as members, with Vietnamese month labels and an All time option. Activity has no trailing divider or public-link explanatory footer.

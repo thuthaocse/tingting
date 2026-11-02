@@ -6,6 +6,10 @@
 - Backend: Rust + Axum + async-graphql; PostgreSQL accessed with SQLx.
 - Default product language: Vietnamese. Currency: VND. Dates use Asia/Ho_Chi_Minh.
 
+## Documentation
+
+Write all repository documentation in English, including README files, guides, architecture notes, verification reports, and skill instructions. Use English prose and examples in documentation; keep the application's Vietnamese product language unchanged. Follow .agents/skills/documentation-conventions/SKILL.md when creating or editing documentation.
+
 ## Design system
 
 - Reuse packages/design-system; tokens.css is the only source of color/spacing/radius tokens.

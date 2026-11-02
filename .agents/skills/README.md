@@ -1,5 +1,9 @@
 # Installed project skills
 
+## documentation-conventions
+
+Project-owned skill requiring English for all repository documentation and documentation examples. The application remains Vietnamese. Read documentation-conventions/SKILL.md when creating, editing, or reviewing documentation.
+
 ## coding-principles
 Copied from the local checkout of https://github.com/skymavis/lanh-ai.
 Source revision: 99a8fae5977cab04c0f1dbf68fa70d159e9c276e.
