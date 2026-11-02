@@ -284,7 +284,7 @@ test('GraphQL workflow: permissions, conservation, partial repayment, conflicts,
       body: JSON.stringify({ query: '{ groups { id } }' }),
     });
     assert.equal(forbiddenOrigin.status, 403);
-    console.log('Verified workflow against the real Rust API and PostgreSQL.');
+    console.log('Verified workflow against the real Rust API and DynamoDB.');
   } finally {
     cookie = process.env.TEST_ADMIN_COOKIE;
     group = result(await command('archiveGroup', group), 'archiveGroup');

@@ -7,6 +7,7 @@ import GroupScreen from './features/groups/GroupScreen';
 import GroupModal from './features/groups/GroupModal';
 import DesignPreview from './features/design-preview/DesignPreview';
 import AppHeader from './app/components/AppHeader';
+import AccessManager from './features/admin/AccessManager';
 import s from './App.module.css';
 export default function App() {
   const model = useTingting();
@@ -26,6 +27,14 @@ export default function App() {
 }
 function CurrentScreen({ model }: { model: TingtingModel }) {
   if (model.loading) return <div className={s.loading}>Đang tải…</div>;
+  if (model.path === '/admin/access')
+    return model.viewer && model.admin ? (
+      <AccessManager onChange={model.load} />
+    ) : model.viewer ? (
+      <DashboardScreen model={model} />
+    ) : (
+      <LoginScreen model={model} />
+    );
   if (!model.token)
     return model.viewer ? <DashboardScreen model={model} /> : <LoginScreen model={model} />;
   if (!model.g)

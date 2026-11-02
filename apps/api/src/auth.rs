@@ -1,6 +1,6 @@
+use crate::store::Store;
 use rand_core::{OsRng, RngCore};
 use sha2::{Digest, Sha256};
-use sqlx::{PgPool, Row};
 use uuid::Uuid;
 
 pub const ADMIN_EMAIL: &str = "thuthao.cse@gmail.com";
@@ -36,6 +36,15 @@ pub fn group_token() -> String {
         .map(|byte| ALPHABET[(byte & 63) as usize] as char)
         .collect()
 }
+pub fn group_id() -> String {
+    const ALPHABET: &[u8; 62] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let mut bytes = [0u8; 8];
+    OsRng.fill_bytes(&mut bytes);
+    bytes
+        .iter()
+        .map(|byte| ALPHABET[(byte % ALPHABET.len() as u8) as usize] as char)
+        .collect()
+}
 
 pub fn signed_in(actor: &Actor) -> Result<Uuid, String> {
     actor
@@ -60,18 +69,14 @@ pub fn cookie_value<'a>(cookies: Option<&'a str>, name: &str) -> Option<&'a str>
         (key == name).then_some(value)
     })
 }
-pub async fn actor(pool: &PgPool, cookies: Option<&str>) -> Actor {
+pub async fn actor(pool: &Store, cookies: Option<&str>, open_group_creation: bool) -> Actor {
     let session = cookie_value(cookies, "lilac_session").map(str::to_owned);
-    let viewer = if let Some(t) = &session {
-        sqlx::query("SELECT u.id,u.email,u.name,g.role FROM user_sessions s JOIN users u ON u.id=s.user_id LEFT JOIN role_grants g ON g.email=u.email WHERE s.token_hash=$1 AND s.expires_at>now()")
-            .bind(digest(t)).fetch_optional(pool).await.ok().flatten().map(|r| {
-                let email: String = r.get("email");
-                let role: Option<String> = r.get("role");
-                let is_admin = email == ADMIN_EMAIL || role.as_deref() == Some("admin");
-                Viewer { id: r.get::<Uuid,_>("id").to_string(), is_admin, can_create_groups: is_admin || role.as_deref() == Some("creator"), email, name: r.get("name") }
-            })
-    } else {
-        None
+    let viewer = match &session {
+        Some(token) => load_viewer(pool, token, open_group_creation)
+            .await
+            .ok()
+            .flatten(),
+        None => None,
     };
     Actor { session, viewer }
 }
@@ -105,4 +110,59 @@ mod tests {
                 .all(|c| c.is_ascii_alphanumeric() || c == b'-' || c == b'_'));
         }
     }
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct User {
+    pub id: String,
+    pub email: String,
+    pub name: String,
+}
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct Session {
+    pub user_id: String,
+    pub expires_at: i64,
+}
+pub async fn revoke(store: &Store, hash: &str) -> Result<(), String> {
+    if let Some(record) = store.read::<Session>("SESSION", hash).await? {
+        store
+            .save(
+                "SESSION",
+                hash,
+                &Session {
+                    user_id: record.value.user_id,
+                    expires_at: 0,
+                },
+                Some(&record.revision),
+            )
+            .await?;
+    }
+    Ok(())
+}
+async fn load_viewer(
+    store: &Store,
+    token: &str,
+    open_group_creation: bool,
+) -> Result<Option<Viewer>, String> {
+    let Some(session) = store.read::<Session>("SESSION", &digest(token)).await? else {
+        return Ok(None);
+    };
+    if session.value.expires_at <= chrono::Utc::now().timestamp() {
+        return Ok(None);
+    }
+    let Some(user) = store.read::<User>("USER", &session.value.user_id).await? else {
+        return Ok(None);
+    };
+    let grant = store
+        .read::<crate::access::Grant>("ROLE", &user.value.email)
+        .await?;
+    let role = grant.as_ref().and_then(|r| r.value.role.as_deref());
+    let is_admin = user.value.email == ADMIN_EMAIL || role == Some("admin");
+    Ok(Some(Viewer {
+        id: user.value.id,
+        email: user.value.email,
+        name: user.value.name,
+        is_admin,
+        can_create_groups: open_group_creation || is_admin || role == Some("creator"),
+    }))
 }

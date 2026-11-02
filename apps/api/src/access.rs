@@ -1,31 +1,36 @@
-use crate::{
-    auth::{self, Actor},
-    repository,
-};
+use crate::auth::{self, Actor};
+use crate::store::Store;
 use async_graphql::SimpleObject;
-use sqlx::{PgPool, Row};
 use uuid::Uuid;
 #[derive(SimpleObject)]
 pub struct AccessGrant {
     pub email: String,
     pub role: String,
 }
-pub async fn list(pool: &PgPool, actor: &Actor) -> Result<Vec<AccessGrant>, String> {
+pub async fn list(pool: &Store, actor: &Actor) -> Result<Vec<AccessGrant>, String> {
     auth::admin(actor)?;
-    let rows = sqlx::query("SELECT email,role FROM role_grants ORDER BY email")
-        .fetch_all(pool)
-        .await
-        .map_err(repository::db)?;
-    Ok(rows
+    let mut grants: Vec<_> = pool
+        .list::<Grant>("ROLE")
+        .await?
         .into_iter()
-        .map(|r| AccessGrant {
-            email: r.get("email"),
-            role: r.get("role"),
+        .filter_map(|record| {
+            record.value.role.map(|role| AccessGrant {
+                email: record.value.email,
+                role,
+            })
         })
-        .collect())
+        .collect();
+    grants.sort_by(|a, b| a.email.cmp(&b.email));
+    Ok(grants)
 }
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct Grant {
+    pub email: String,
+    pub role: Option<String>,
+}
+
 pub async fn set(
-    pool: &PgPool,
+    pool: &Store,
     actor: &Actor,
     email: String,
     role: Option<String>,
@@ -49,28 +54,23 @@ pub async fn set(
     {
         return Err("Vai trò không hợp lệ".into());
     }
-    let mut tx = pool.begin().await.map_err(repository::db)?;
-    // Serialize changes for an email, including its first grant.
-    sqlx::query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))")
-        .bind(&email)
-        .execute(&mut *tx)
-        .await
-        .map_err(repository::db)?;
-    let before: Option<String> = sqlx::query_scalar("SELECT role FROM role_grants WHERE email=$1")
-        .bind(&email)
-        .fetch_optional(&mut *tx)
-        .await
-        .map_err(repository::db)?;
-    if let Some(ref role) = role {
-        sqlx::query("INSERT INTO role_grants(email,role,granted_by) VALUES($1,$2,$3) ON CONFLICT(email) DO UPDATE SET role=EXCLUDED.role,granted_by=EXCLUDED.granted_by,updated_at=now()").bind(&email).bind(role).bind(user).execute(&mut *tx).await.map_err(repository::db)?;
-    } else {
-        sqlx::query("DELETE FROM role_grants WHERE email=$1")
-            .bind(&email)
-            .execute(&mut *tx)
-            .await
-            .map_err(repository::db)?;
-    }
-    sqlx::query("INSERT INTO role_grant_events(id,email,before_role,after_role,actor_user_id) VALUES($1,$2,$3,$4,$5)").bind(Uuid::new_v4()).bind(email).bind(before).bind(role).bind(user).execute(&mut *tx).await.map_err(repository::db)?;
-    tx.commit().await.map_err(repository::db)?;
+    let before = pool.read::<Grant>("ROLE", &email).await?;
+    let grant = Grant {
+        email: email.clone(),
+        role,
+    };
+    let event = serde_json::json!({"email":email,"before_role":before.as_ref().and_then(|g|g.value.role.as_ref()),"after_role":grant.role,"actor_user_id":user,"created_at":chrono::Utc::now().to_rfc3339()});
+    pool.commit(vec![
+        pool.prepare(
+            "ROLE",
+            &email,
+            &grant,
+            before.as_ref().map(|r| r.revision.as_str()),
+        )
+        .await?,
+        pool.prepare("ROLE_AUDIT", &Uuid::new_v4().to_string(), &event, None)
+            .await?,
+    ])
+    .await?;
     Ok(true)
 }

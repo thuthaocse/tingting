@@ -56,14 +56,8 @@ export function Avatar({ name }: { name: string }) {
 }
 export function Logo() {
   return (
-    <a href="/" className={s.logo} aria-label="Tingting — Trang chủ">
-      <svg viewBox="0 0 64 48" aria-hidden="true">
-        <g fill="none" stroke="currentColor" strokeWidth="7">
-          <rect x="7" y="6" width="29" height="34" rx="14" transform="rotate(30 21 23)" />
-          <rect x="28" y="8" width="29" height="34" rx="14" transform="rotate(30 42 25)" />
-        </g>
-      </svg>
-      tingting<span aria-hidden="true">.</span>
+    <a href="/" className={s.logo} aria-label="TingTing — Trang chủ">
+      TingTing
     </a>
   );
 }

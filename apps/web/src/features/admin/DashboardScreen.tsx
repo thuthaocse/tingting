@@ -2,10 +2,9 @@ import { Button, Input } from '@tingting/design-system';
 import type { TingtingModel } from '../../app/hooks/useTingting';
 import { money } from '../../domain.mjs';
 import AccountSummary from './AccountSummary';
-import AccessManager from './AccessManager';
 import s from './DashboardScreen.module.css';
 export default function DashboardScreen({ model }: { model: TingtingModel }) {
-  const { error, groups, dashboard, search, setSearch, setModal, admin, viewer } = model;
+  const { error, groups, dashboard, search, setSearch, setModal, viewer } = model;
   const filtered = groups.filter((x) =>
     x.name.toLocaleLowerCase('vi').includes(search.toLocaleLowerCase('vi')),
   );
@@ -18,7 +17,11 @@ export default function DashboardScreen({ model }: { model: TingtingModel }) {
         </div>
         {model.canCreate && <Button onClick={() => setModal('create')}>+ Tạo nhóm</Button>}
       </div>
-      {admin && <AccessManager onChange={model.load} />}
+      {model.admin && (
+        <a className={s.adminLink} href="/admin/access">
+          Quản lý tài khoản và vai trò
+        </a>
+      )}
       {error && (
         <p role="alert" className={s.error}>
           {error}
@@ -62,12 +65,16 @@ export default function DashboardScreen({ model }: { model: TingtingModel }) {
               {summary?.memberId && (
                 <>
                   <div className={s.groupAmounts}>
-                    <span>
-                      Cần trả <b>{money(summary.payable)}</b>
-                    </span>
-                    <span>
-                      Được nhận <b>{money(summary.receivable)}</b>
-                    </span>
+                    {summary.payable > 0 && (
+                      <span>
+                        Cần trả <b>{money(summary.payable)}</b>
+                      </span>
+                    )}
+                    {summary.receivable > 0 && (
+                      <span>
+                        Được nhận <b>{money(summary.receivable)}</b>
+                      </span>
+                    )}
                   </div>
                   {owedBy.length > 0 && (
                     <details className={s.owedBy}>

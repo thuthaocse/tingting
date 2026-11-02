@@ -15,6 +15,14 @@
   min-width: 0;
   gap: var(--space-3);
 }
+.logoutLabel {
+  display: none;
+}
+@media (max-width: 640px) {
+  .logoutLabel {
+    display: inline;
+  }
+}
 .account {
   display: flex;
   align-items: center;
@@ -96,6 +104,12 @@
   .menuPanel .actions {
     justify-content: flex-start;
     flex-wrap: wrap;
+  }
+  .menuPanel .iconButton {
+    width: auto;
+    min-width: 0;
+    height: 40px;
+    padding-inline: var(--space-3);
   }
   .menuPanel .account {
     flex-basis: 100%;

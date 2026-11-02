@@ -124,7 +124,7 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
                     <strong>{money(d.amount)}</strong>
                     {model.canEdit && (
                       <Button variant="quiet" small onClick={() => pay(d)}>
-                        Ghi nhận
+                        Thanh toán
                       </Button>
                     )}
                   </div>

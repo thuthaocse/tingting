@@ -1,10 +1,10 @@
+use crate::store::Store;
 use crate::{
     auth::{self, Actor},
     domain::{self, Group, Money},
     repository,
 };
 use async_graphql::SimpleObject;
-use sqlx::{PgPool, Row};
 
 #[derive(SimpleObject)]
 pub struct AccountDebt {
@@ -91,7 +91,7 @@ fn add_group(out: &mut Dashboard, g: &Group, email: &str) {
     }
     out.groups.push(summary);
 }
-pub async fn load(pool: &PgPool, actor: &Actor) -> Result<Dashboard, String> {
+pub async fn load(pool: &Store, actor: &Actor) -> Result<Dashboard, String> {
     auth::signed_in(actor)?;
     let email = &actor.viewer.as_ref().unwrap().email;
     let mut out = Dashboard {
@@ -101,21 +101,8 @@ pub async fn load(pool: &PgPool, actor: &Actor) -> Result<Dashboard, String> {
         incoming: vec![],
         groups: vec![],
     };
-    // A single repeatable-read snapshot keeps totals and detail rows consistent.
-    let mut tx = pool.begin().await.map_err(repository::db)?;
-    sqlx::query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
-        .execute(&mut *tx)
-        .await
-        .map_err(repository::db)?;
-    let rows = sqlx::query("SELECT token FROM groups ORDER BY created_at DESC")
-        .fetch_all(&mut *tx)
-        .await
-        .map_err(repository::db)?;
-    for row in rows {
-        let token: String = row.get("token");
-        let g = repository::load(&mut tx, &token, false).await?;
-        add_group(&mut out, &g, email);
+    for group in repository::all(pool).await? {
+        add_group(&mut out, &group, email);
     }
-    tx.commit().await.map_err(repository::db)?;
     Ok(out)
 }

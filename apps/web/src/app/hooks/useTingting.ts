@@ -178,6 +178,7 @@ export function useTingting() {
     }
   };
   return {
+    path,
     viewer,
     canCreate: !!viewer?.canCreateGroups,
     navigate,

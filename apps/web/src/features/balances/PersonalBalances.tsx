@@ -67,7 +67,7 @@ function BalanceSection({
           <strong>{money(d.amount)}</strong>
           {!readOnly && (
             <Button variant="quiet" small disabled={group.archived} onClick={() => onRecord(d)}>
-              Ghi nhận
+              Thanh toán
             </Button>
           )}
         </div>

@@ -64,7 +64,7 @@ export default function SettlementForm({
       </Field>
       <p className={s.notice}>Chỉ ghi nhận khoản trả, không chuyển tiền.</p>
       <Button disabled={busy || !amount || !from || !to || from === to}>
-        {busy ? 'Đang lưu…' : 'Ghi nhận thanh toán'}
+        {busy ? 'Đang lưu…' : 'Thanh toán'}
       </Button>
     </Form>
   );

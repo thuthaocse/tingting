@@ -43,7 +43,7 @@ export default function DesignPreview() {
           <div className={s.actions}>
             <Button onClick={() => setOpen(true)}>Mở hộp thoại</Button>
             <Button variant="secondary">Thứ cấp</Button>
-            <Button variant="quiet">Ghi nhận</Button>
+            <Button variant="quiet">Thanh toán</Button>
             <Button variant="danger">Xóa</Button>
             <Button disabled>Đang lưu…</Button>
           </div>
@@ -91,12 +91,12 @@ export default function DesignPreview() {
             <span>Linh → Minh</span>
             <strong>{money(150000)}</strong>
             <Button variant="quiet" small onClick={() => setOpen(true)}>
-              Ghi nhận
+              Thanh toán
             </Button>
           </div>
         </section>
         {open && (
-          <Modal title="Ghi nhận thanh toán" onClose={() => setOpen(false)}>
+          <Modal title="Thanh toán" onClose={() => setOpen(false)}>
             <p className={s.notice}>Hộp thoại hỗ trợ phím Escape và giữ focus bên trong.</p>
             <Button onClick={() => setOpen(false)}>Đóng</Button>
           </Modal>

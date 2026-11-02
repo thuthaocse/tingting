@@ -3,7 +3,10 @@ use crate::{
     domain::*,
     repository as repo,
 };
-use sqlx::{PgPool, Postgres, Row, Transaction};
+use crate::{
+    repository::{StoredGroup, Transaction},
+    store::Store,
+};
 use std::collections::BTreeSet;
 use uuid::Uuid;
 pub fn text(s: &str, max: usize, required: bool) -> Result<String, String> {
@@ -57,13 +60,18 @@ pub fn member(g: &Group, id: &str) -> Result<(), String> {
     Ok(())
 }
 pub async fn start(
-    pool: &PgPool,
+    pool: &Store,
     token: &str,
     version: i32,
     allow_archived: bool,
-) -> Result<(Transaction<'static, Postgres>, Group), String> {
-    let mut tx = pool.begin().await.map_err(repo::db)?;
-    let g = repo::load(&mut tx, token, true).await?;
+) -> Result<(Transaction, Group), String> {
+    let record = repo::resolve(pool, token).await?;
+    let g = record.value.group.clone();
+    let tx = Transaction {
+        store: pool.clone(),
+        stored: record.value,
+        revision: Some(record.revision),
+    };
     if g.version != version {
         return Err(
             "CONFLICT: Dữ liệu đã thay đổi. Đã tải lại bản mới; hãy kiểm tra và lưu lại.".into(),
@@ -75,27 +83,43 @@ pub async fn start(
     Ok((tx, g))
 }
 pub async fn finish(
-    mut tx: Transaction<'_, Postgres>,
+    mut tx: Transaction,
     before: &Group,
     mut after: Group,
     action: &str,
     entity: Option<&str>,
     actor: &Actor,
 ) -> Result<Group, String> {
-    after.version += 1;
-    repo::persist(&mut tx, &after).await?;
-    sqlx::query("INSERT INTO activity_events(id,group_id,action,entity_id,before_state,after_state,actor_user_id) VALUES($1,$2,$3,$4,$5,$6,$7)").bind(Uuid::new_v4()).bind(repo::id(&after.id)?).bind(action).bind(entity).bind(serde_json::to_value(before).map_err(|_|"Serialization failed")?).bind(serde_json::to_value(&after).map_err(|_|"Serialization failed")?).bind(actor.viewer.as_ref().and_then(|u| Uuid::parse_str(&u.id).ok())).execute(&mut *tx).await.map_err(repo::db)?;
-    tx.commit().await.map_err(repo::db)?;
+    after = repo::ordered(after);
+    after.version = after.version.checked_add(1).ok_or("Version exhausted")?;
+    let event_id = Uuid::new_v4().to_string();
+    let audit = serde_json::json!({"id":event_id,"group_id":after.id,"action":action,"entity_id":entity,"before_state":before,"after_state":after,"actor_user_id":actor.viewer.as_ref().map(|v|&v.id),"created_at":chrono::Utc::now().to_rfc3339()});
+    let mut writes = vec![tx.store.prepare("AUDIT", &event_id, &audit, None).await?];
+    if before.token != after.token || tx.revision.is_none() {
+        writes.push(
+            tx.store
+                .prepare(
+                    "LINK",
+                    &after.token,
+                    &serde_json::json!({"group_id":after.id}),
+                    None,
+                )
+                .await?,
+        );
+    }
+    tx.stored.group = after.clone();
+    writes.push(
+        tx.store
+            .prepare("GROUP", &after.id, &tx.stored, tx.revision.as_deref())
+            .await?,
+    );
+    tx.store.commit(writes).await?;
     Ok(public_group(after, auth::is_admin(actor)))
 }
-pub async fn create(
-    pool: &PgPool,
-    input: CreateGroupInput,
-    actor: &Actor,
-) -> Result<Group, String> {
+pub async fn create(pool: &Store, input: CreateGroupInput, actor: &Actor) -> Result<Group, String> {
     auth::creator(actor)?;
     let g = Group {
-        id: Uuid::new_v4().to_string(),
+        id: auth::group_id(),
         name: text(&input.name, 120, true)?,
         description: text(&input.description, 500, false)?,
         token: auth::group_token(),
@@ -105,18 +129,20 @@ pub async fn create(
         expenses: vec![],
         settlements: vec![],
     };
-    let mut tx = pool.begin().await.map_err(repo::db)?;
-    sqlx::query("INSERT INTO groups(id,name,token,version) VALUES($1,$2,$3,0)")
-        .bind(repo::id(&g.id)?)
-        .bind(&g.name)
-        .bind(&g.token)
-        .execute(&mut *tx)
-        .await
-        .map_err(repo::db)?;
+    let tx = Transaction {
+        store: pool.clone(),
+        stored: StoredGroup {
+            group: g.clone(),
+            aliases: vec![],
+            created_at: chrono::Utc::now().timestamp_micros(),
+            next_order: 0,
+        },
+        revision: None,
+    };
     finish(tx, &g, g.clone(), "create_group", None, actor).await
 }
 pub async fn save_expense(
-    pool: &PgPool,
+    pool: &Store,
     token: &str,
     version: i32,
     input: ExpenseInput,
@@ -154,7 +180,7 @@ pub async fn save_expense(
     finish(tx, &before, g, "save_expense", Some(&input.id), actor).await
 }
 pub async fn save_settlement(
-    pool: &PgPool,
+    pool: &Store,
     token: &str,
     version: i32,
     input: SettlementInput,
@@ -195,7 +221,7 @@ pub async fn save_settlement(
     finish(tx, &before, g, "save_settlement", Some(&input.id), actor).await
 }
 pub async fn delete(
-    pool: &PgPool,
+    pool: &Store,
     token: &str,
     version: i32,
     id: &str,
@@ -232,7 +258,7 @@ pub async fn delete(
     .await
 }
 pub async fn update(
-    pool: &PgPool,
+    pool: &Store,
     token: &str,
     version: i32,
     input: UpdateGroupInput,
@@ -265,7 +291,7 @@ pub async fn update(
     finish(tx, &before, g, "update_group", None, actor).await
 }
 pub async fn admin_action(
-    pool: &PgPool,
+    pool: &Store,
     token: &str,
     version: i32,
     rotate: bool,
@@ -275,11 +301,7 @@ pub async fn admin_action(
     let (mut tx, before) = start(pool, token, version, true).await?;
     let mut g = before.clone();
     if rotate {
-        sqlx::query("DELETE FROM group_link_aliases WHERE group_id=$1")
-            .bind(repo::id(&g.id)?)
-            .execute(&mut *tx)
-            .await
-            .map_err(repo::db)?;
+        tx.stored.aliases.clear();
         g.token = auth::group_token()
     } else {
         g.archived = !g.archived
@@ -297,35 +319,4 @@ pub async fn admin_action(
         actor,
     )
     .await
-}
-
-pub async fn shorten_legacy_links(pool: &PgPool) -> Result<(), String> {
-    let groups = sqlx::query("SELECT id FROM groups WHERE length(token)>16")
-        .fetch_all(pool)
-        .await
-        .map_err(repo::db)?;
-    for row in groups {
-        let group_id: Uuid = row.get("id");
-        let mut tx = pool.begin().await.map_err(repo::db)?;
-        let old: String = sqlx::query_scalar("SELECT token FROM groups WHERE id=$1 FOR UPDATE")
-            .bind(group_id)
-            .fetch_one(&mut *tx)
-            .await
-            .map_err(repo::db)?;
-        if old.len() <= 16 {
-            tx.commit().await.map_err(repo::db)?;
-            continue;
-        }
-        let new = auth::group_token();
-        sqlx::query("INSERT INTO group_link_aliases(token,group_id) VALUES($1,$2) ON CONFLICT(token) DO NOTHING").bind(&old).bind(group_id).execute(&mut *tx).await.map_err(repo::db)?;
-        sqlx::query("UPDATE groups SET token=$2,version=version+1 WHERE id=$1")
-            .bind(group_id)
-            .bind(&new)
-            .execute(&mut *tx)
-            .await
-            .map_err(repo::db)?;
-        sqlx::query("INSERT INTO activity_events(id,group_id,action,before_state,after_state) VALUES($1,$2,'shorten_link',$3,$4)").bind(Uuid::new_v4()).bind(group_id).bind(serde_json::json!({"token":old})).bind(serde_json::json!({"token":new})).execute(&mut *tx).await.map_err(repo::db)?;
-        tx.commit().await.map_err(repo::db)?;
-    }
-    Ok(())
 }

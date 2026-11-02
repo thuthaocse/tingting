@@ -26,8 +26,20 @@
 .account {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-3);
-  align-items: start;
+  gap: 0 var(--space-4);
+  align-items: stretch;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+.account > * {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.account > * + * {
+  border-left: 1px solid var(--color-border);
 }
 .groupCards {
   display: grid;
@@ -36,6 +48,8 @@
   margin-top: var(--space-4);
 }
 .card {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -99,6 +113,10 @@
   .groupCards {
     grid-template-columns: minmax(0, 1fr);
   }
+  .account > * + * {
+    border-left: 0;
+    border-top: 1px solid var(--color-border);
+  }
   .heading h1 {
     font-size: 1.4rem;
   }
@@ -142,5 +160,10 @@
 }
 
 .groupCards {
-  align-items: start;
+  align-items: stretch;
+}
+.adminLink {
+  display: inline-block;
+  margin: 0 0 var(--space-4);
+  font-size: var(--font-small);
 }

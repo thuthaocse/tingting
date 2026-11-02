@@ -33,7 +33,7 @@ export default function GroupModal({ model }: { model: TingtingModel }) {
           settings: 'Cài đặt nhóm',
           expense: expense ? 'Chỉnh sửa khoản chi' : 'Thêm khoản chi',
           detail: 'Chi tiết khoản chi',
-          settlement: settlement?.id ? 'Chỉnh sửa thanh toán' : 'Ghi nhận thanh toán',
+          settlement: settlement?.id ? 'Chỉnh sửa thanh toán' : 'Thanh toán',
           'settlement-detail': 'Chi tiết thanh toán',
         }[modal || ''] || ''
       }

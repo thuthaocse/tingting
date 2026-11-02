@@ -16,7 +16,7 @@ test('Vite renders shared design-system components and initial screens without a
   });
   try {
     const components = await server.ssrLoadModule('../../packages/design-system/src/index.tsx');
-    assert.match(renderToString(createElement(components.Logo)), /tingting/);
+    assert.match(renderToString(createElement(components.Logo)), /TingTing/);
     assert.match(renderToString(createElement(components.Button, {}, 'Ghi nhận')), /Ghi nhận/);
     const { default: LoginScreen } = await server.ssrLoadModule(
       '/src/features/admin/LoginScreen.tsx',
@@ -26,7 +26,7 @@ test('Vite renders shared design-system components and initial screens without a
     );
     assert.match(html, /Nhẹ tiền, nhẹ lòng/);
     assert.match(html, /Đăng nhập bằng Google/);
-    assert.match(html, /Tingting — Trang chủ/);
+    assert.match(html, /TingTing — Trang chủ/);
     assert.doesNotMatch(html, /<header/);
     const group = {
       id: 'g',
@@ -124,7 +124,7 @@ test('Vite renders shared design-system components and initial screens without a
     assert.match(header, /Thảo Trịnh/);
     assert.match(header, /Menu tài khoản/);
     assert.match(header, /aria-label="Đăng xuất"/);
-    assert.doesNotMatch(header, />Đăng xuất</);
+    assert.match(header, /<span[^>]*>Đăng xuất<\/span>/);
     assert.doesNotMatch(header, /Chia sẻ|Cài đặt nhóm/);
     assert.match(header, /aria-hidden="true"/);
     const { default: GroupScreen } = await server.ssrLoadModule(

@@ -88,7 +88,8 @@ impl Group {
         let Some(user) = &actor.viewer else {
             return Ok(None);
         };
-        let g = crate::repository::read(ctx.data_unchecked::<sqlx::PgPool>(), &self.token).await?;
+        let g = crate::repository::read(ctx.data_unchecked::<crate::store::Store>(), &self.token)
+            .await?;
         Ok(crate::dashboard::matched_member(&g, &user.email))
     }
 

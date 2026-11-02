@@ -41,6 +41,7 @@ function HeaderActions({ model }: { model: TingtingModel }) {
             onClick={() => void model.logout()}
           >
             <LogoutIcon />
+            <span className={s.logoutLabel}>Đăng xuất</span>
           </Button>
         </>
       )}

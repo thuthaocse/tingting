@@ -22,7 +22,10 @@ export default function Activity({
         const share = expense?.shares.find((x) => x.memberId === identity)?.amount || 0;
         const receivable = expense?.payerId === identity ? expense.amount - share : 0;
         return (
-          <div key={row.id} className={s.entry}>
+          <div
+            key={row.id}
+            className={`${s.entry} ${!entries[i + 1] || entries[i + 1].date !== row.date ? s.lastOfDay : ''}`}
+          >
             {(i === 0 || entries[i - 1].date !== row.date) && (
               <p className={s.date}>
                 {new Date(row.date + 'T12:00:00').toLocaleDateString('vi-VN', {

@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Rust tests and lint
         run: |
-          docker run --rm -v "$PWD:/app" -w /app/apps/api rust:1.99.1-slim-trixie sh -c 'rustup component add rustfmt clippy && cargo fmt --check && cargo test --locked && cargo clippy --all-targets --locked -- -D warnings'
+          docker run --rm -v "$PWD:/app" -w /app/apps/api rust:1.99.1-slim-trixie sh -c 'rustup component add rustfmt clippy && cargo fmt --check && cargo test --locked && cargo clippy --all-targets --features lambda --locked -- -D warnings'
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -36,6 +36,96 @@ jobs:
             sleep 2
           done
           npm run test:integration:local
-          docker compose exec -T api lilac-api --schema | diff - graphql/schema.graphql
+          docker run --rm --network host -v "$PWD:/app" -w /app/apps/api -e AWS_ACCESS_KEY_ID=local -e AWS_SECRET_ACCESS_KEY=local -e AWS_REGION=ap-southeast-1 -e DYNAMODB_TABLE=tingting-local -e DYNAMODB_ENDPOINT=http://127.0.0.1:8000 rust:1.99.1-slim-trixie cargo test --locked --features lambda -- --ignored
+          docker compose exec -T api tingting-api --schema | diff - graphql/schema.graphql
       - if: always()
         run: docker compose logs api && docker compose down -v
+
+  deploy-targets:
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag')
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.target.outputs.frontend }}
+      backend: ${{ steps.target.outputs.backend }}
+    steps:
+      - id: target
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          if [[ "$REF_TYPE" == tag ]]; then
+            echo 'frontend=true' >> "$GITHUB_OUTPUT"
+            echo 'backend=true' >> "$GITHUB_OUTPUT"
+          elif [[ "$COMMIT_MESSAGE" == *'ci: bump frontend'* ]]; then
+            echo 'frontend=true' >> "$GITHUB_OUTPUT"
+            echo 'backend=false' >> "$GITHUB_OUTPUT"
+          elif [[ "$COMMIT_MESSAGE" == *'ci: bump backend'* ]]; then
+            echo 'frontend=false' >> "$GITHUB_OUTPUT"
+            echo 'backend=true' >> "$GITHUB_OUTPUT"
+          elif [[ "$COMMIT_MESSAGE" == *'ci: bump'* ]]; then
+            echo 'frontend=true' >> "$GITHUB_OUTPUT"
+            echo 'backend=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'frontend=false' >> "$GITHUB_OUTPUT"
+            echo 'backend=false' >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy-frontend:
+    needs: [frontend, backend, deploy-targets]
+    if: github.event_name == 'push' && needs.deploy-targets.outputs.frontend == 'true' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      AWS_DEFAULT_REGION: ${{ vars.AWS_REGION }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Publish frontend to S3 and invalidate CloudFront
+        env:
+          FRONTEND_BUCKET: ${{ vars.AWS_FRONTEND_BUCKET }}
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
+        run: |
+          aws s3 sync apps/web/dist/ "s3://${FRONTEND_BUCKET}/" --exclude index.html --cache-control 'public,max-age=31536000,immutable'
+          aws s3 cp apps/web/dist/index.html "s3://${FRONTEND_BUCKET}/index.html" --cache-control 'no-cache' --content-type 'text/html; charset=utf-8'
+          aws cloudfront create-invalidation --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" --paths / /index.html
+
+  deploy-backend:
+    needs: [frontend, backend, deploy-targets]
+    if: github.event_name == 'push' && needs.deploy-targets.outputs.backend == 'true' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag')
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      AWS_DEFAULT_REGION: ${{ vars.AWS_REGION }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Lambda package
+        run: bash scripts/build-lambda.sh
+      - name: Update Lambda code
+        env:
+          LAMBDA_FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION_NAME }}
+        run: aws lambda update-function-code --function-name "$LAMBDA_FUNCTION_NAME" --zip-file fileb://build/api.zip
+      - name: Update Google OAuth secret
+        env:
+          GOOGLE_OAUTH_CLIENT_JSON: ${{ secrets.GOOGLE_OAUTH_CLIENT_JSON }}
+          GOOGLE_OAUTH_SECRET_ARN: ${{ vars.AWS_GOOGLE_OAUTH_SECRET_ARN }}
+        run: |
+          if [[ -z "$GOOGLE_OAUTH_CLIENT_JSON" ]]; then
+            echo 'GOOGLE_OAUTH_CLIENT_JSON is not configured; leaving the AWS Secrets Manager value unchanged.'
+            exit 0
+          fi
+          printf '%s' "$GOOGLE_OAUTH_CLIENT_JSON" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(json.dumps({"GOOGLE_CLIENT_ID":d["web"]["client_id"],"GOOGLE_CLIENT_SECRET":d["web"]["client_secret"]}))' > /tmp/google-secret.json
+          aws secretsmanager put-secret-value --secret-id "$GOOGLE_OAUTH_SECRET_ARN" --secret-string file:///tmp/google-secret.json
+          rm -f /tmp/google-secret.json

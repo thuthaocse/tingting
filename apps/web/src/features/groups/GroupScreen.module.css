@@ -309,6 +309,7 @@
 }
 .tabPanel {
   padding-top: var(--space-3);
+  padding-bottom: var(--space-4);
 }
 .page {
   padding-bottom: var(--space-6);
@@ -321,7 +322,7 @@
     padding-bottom: var(--space-6);
   }
   .contentInner {
-    padding: 0 var(--space-3) var(--space-3);
+    padding: 0 var(--space-3);
   }
   .contentHeader {
     align-items: center;

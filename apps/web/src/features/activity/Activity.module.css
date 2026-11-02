@@ -92,7 +92,7 @@ div:first-child > .date {
   padding-top: 0;
 }
 
-.entry:last-child .activityRow {
+.lastOfDay .activityRow {
   border-bottom: 0;
 }
 

@@ -1,20 +1,19 @@
+use crate::store::Store;
 use crate::{
     auth::{self, Actor, AuthConfig},
     domain::*,
     repository as repo, services,
 };
 use async_graphql::{Context, EmptySubscription, Object, Result, Schema};
-use sqlx::{PgPool, Row};
 pub type ApiSchema = Schema<Query, Mutation, EmptySubscription>;
 pub struct Query;
 #[Object]
 impl Query {
     async fn access_grants(&self, ctx: &Context<'_>) -> Result<Vec<crate::access::AccessGrant>> {
-        Ok(crate::access::list(
-            ctx.data_unchecked::<PgPool>(),
-            ctx.data_unchecked::<Actor>(),
+        Ok(
+            crate::access::list(ctx.data_unchecked::<Store>(), ctx.data_unchecked::<Actor>())
+                .await?,
         )
-        .await?)
     }
 
     async fn me(&self, ctx: &Context<'_>) -> Option<auth::Viewer> {
@@ -24,38 +23,30 @@ impl Query {
         ctx.data_unchecked::<AuthConfig>().google_enabled
     }
     async fn dashboard(&self, ctx: &Context<'_>) -> Result<crate::dashboard::Dashboard> {
-        Ok(crate::dashboard::load(
-            ctx.data_unchecked::<PgPool>(),
-            ctx.data_unchecked::<Actor>(),
+        Ok(
+            crate::dashboard::load(ctx.data_unchecked::<Store>(), ctx.data_unchecked::<Actor>())
+                .await?,
         )
-        .await?)
     }
 
     async fn groups(&self, ctx: &Context<'_>) -> Result<Vec<Group>> {
         auth::signed_in(ctx.data_unchecked::<Actor>())?;
-        let pool = ctx.data_unchecked::<PgPool>();
-        let rows = sqlx::query("SELECT token FROM groups ORDER BY created_at DESC")
-            .fetch_all(pool)
-            .await
-            .map_err(repo::db)?;
-        let mut out = vec![];
-        for r in rows {
-            let token: String = r.get("token");
-            out.push(public_group(
-                repo::read(pool, &token).await?,
-                auth::is_admin(ctx.data_unchecked::<Actor>()),
-            ))
-        }
+        let pool = ctx.data_unchecked::<Store>();
+        let groups = repo::all(pool).await?;
+        let out = groups
+            .into_iter()
+            .map(|group| public_group(group, auth::is_admin(ctx.data_unchecked::<Actor>())))
+            .collect();
         Ok(out)
     }
     async fn group(&self, ctx: &Context<'_>, token: String) -> Result<Group> {
         Ok(public_group(
-            repo::read(ctx.data_unchecked::<PgPool>(), &token).await?,
+            repo::read(ctx.data_unchecked::<Store>(), &token).await?,
             auth::is_admin(ctx.data_unchecked::<Actor>()),
         ))
     }
     async fn balances(&self, ctx: &Context<'_>, token: String) -> Result<Vec<Balance>> {
-        let g = repo::read(ctx.data_unchecked::<PgPool>(), &token).await?;
+        let g = repo::read(ctx.data_unchecked::<Store>(), &token).await?;
         Ok(crate::domain::balances(&g)
             .into_iter()
             .map(|(member_id, amount)| Balance {
@@ -70,7 +61,7 @@ impl Query {
         token: String,
         #[graphql(default = true)] simplified: bool,
     ) -> Result<Vec<Debt>> {
-        let g = repo::read(ctx.data_unchecked::<PgPool>(), &token).await?;
+        let g = repo::read(ctx.data_unchecked::<Store>(), &token).await?;
         Ok(crate::domain::debts(&g, simplified))
     }
 }
@@ -84,7 +75,7 @@ impl Mutation {
         role: Option<String>,
     ) -> Result<bool> {
         Ok(crate::access::set(
-            ctx.data_unchecked::<PgPool>(),
+            ctx.data_unchecked::<Store>(),
             ctx.data_unchecked::<Actor>(),
             email,
             role,
@@ -95,11 +86,7 @@ impl Mutation {
     async fn logout(&self, ctx: &Context<'_>) -> Result<bool> {
         let a = ctx.data_unchecked::<Actor>();
         if let Some(t) = &a.session {
-            sqlx::query("DELETE FROM user_sessions WHERE token_hash=$1")
-                .bind(auth::digest(t))
-                .execute(ctx.data_unchecked::<PgPool>())
-                .await
-                .map_err(repo::db)?;
+            crate::auth::revoke(ctx.data_unchecked::<Store>(), &auth::digest(t)).await?;
         }
         ctx.insert_http_header(
             "Set-Cookie",
@@ -109,7 +96,7 @@ impl Mutation {
     }
     async fn create_group(&self, ctx: &Context<'_>, input: CreateGroupInput) -> Result<Group> {
         Ok(services::create(
-            ctx.data_unchecked::<PgPool>(),
+            ctx.data_unchecked::<Store>(),
             input,
             ctx.data_unchecked::<Actor>(),
         )
@@ -123,7 +110,7 @@ impl Mutation {
         input: UpdateGroupInput,
     ) -> Result<Group> {
         Ok(services::update(
-            ctx.data_unchecked::<PgPool>(),
+            ctx.data_unchecked::<Store>(),
             &token,
             version,
             input,
@@ -139,7 +126,7 @@ impl Mutation {
         input: ExpenseInput,
     ) -> Result<Group> {
         Ok(services::save_expense(
-            ctx.data_unchecked::<PgPool>(),
+            ctx.data_unchecked::<Store>(),
             &token,
             version,
             input,
@@ -155,7 +142,7 @@ impl Mutation {
         id: String,
     ) -> Result<Group> {
         Ok(services::delete(
-            ctx.data_unchecked::<PgPool>(),
+            ctx.data_unchecked::<Store>(),
             &token,
             version,
             &id,
@@ -172,7 +159,7 @@ impl Mutation {
         input: SettlementInput,
     ) -> Result<Group> {
         Ok(services::save_settlement(
-            ctx.data_unchecked::<PgPool>(),
+            ctx.data_unchecked::<Store>(),
             &token,
             version,
             input,
@@ -188,7 +175,7 @@ impl Mutation {
         id: String,
     ) -> Result<Group> {
         Ok(services::delete(
-            ctx.data_unchecked::<PgPool>(),
+            ctx.data_unchecked::<Store>(),
             &token,
             version,
             &id,
@@ -199,7 +186,7 @@ impl Mutation {
     }
     async fn rotate_link(&self, ctx: &Context<'_>, token: String, version: i32) -> Result<Group> {
         Ok(services::admin_action(
-            ctx.data_unchecked::<PgPool>(),
+            ctx.data_unchecked::<Store>(),
             &token,
             version,
             true,
@@ -209,7 +196,7 @@ impl Mutation {
     }
     async fn archive_group(&self, ctx: &Context<'_>, token: String, version: i32) -> Result<Group> {
         Ok(services::admin_action(
-            ctx.data_unchecked::<PgPool>(),
+            ctx.data_unchecked::<Store>(),
             &token,
             version,
             false,
@@ -218,7 +205,7 @@ impl Mutation {
         .await?)
     }
 }
-pub fn schema(pool: PgPool, secure_cookie: bool, google_enabled: bool) -> ApiSchema {
+pub fn schema(pool: Store, secure_cookie: bool, google_enabled: bool) -> ApiSchema {
     Schema::build(Query, Mutation, EmptySubscription)
         .data(pool)
         .data(AuthConfig {

@@ -79,16 +79,11 @@
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
   font-size: 1.6rem;
   font-weight: 800;
   letter-spacing: -0.06em;
   color: var(--color-ink);
   text-decoration: none;
-}
-.logo svg {
-  width: 37px;
-  height: 32px;
 }
 .tabs {
   display: flex;
@@ -159,6 +154,9 @@
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
 }
+.dialog :global(button) {
+  border-radius: 0;
+}
 .dialogBody::-webkit-scrollbar {
   width: 6px;
 }
@@ -215,7 +213,4 @@
 .dialog::backdrop {
   background: var(--color-overlay);
   backdrop-filter: blur(3px);
-}
-.logo svg {
-  color: var(--color-action);
 }

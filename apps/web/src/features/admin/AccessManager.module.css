@@ -4,6 +4,14 @@
   background: var(--color-surface);
   margin-bottom: var(--space-4);
 }
+.page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5);
+}
+.page h1 {
+  margin-bottom: var(--space-5);
+}
 .panel summary {
   cursor: pointer;
   padding: var(--space-3) var(--space-4);

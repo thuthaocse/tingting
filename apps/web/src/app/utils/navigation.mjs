@@ -15,6 +15,7 @@ export function internalRoute(href, base, event, target = '', download = false) 
   if (
     url.pathname !== '/' &&
     url.pathname !== '/design-system' &&
+    url.pathname !== '/admin/access' &&
     !/^\/g\/[A-Za-z0-9_-]+$/.test(url.pathname)
   )
     return null;
