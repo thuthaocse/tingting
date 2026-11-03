@@ -1,4 +1,4 @@
-.page { max-width: 1060px; margin: 0 auto; padding: 40px 24px 90px; display: grid; gap: 20px; }
+.page { max-width: var(--page-width); margin: 0 auto; padding: 40px 24px 90px; display: grid; gap: 20px; }
 .heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; }
 .eyebrow { color: var(--color-muted); font-size: var(--font-small); font-weight: 700; letter-spacing: .06em; margin-bottom: 5px; }
 .muted, .card p, .card small { color: var(--color-muted); font-size: var(--font-small); }

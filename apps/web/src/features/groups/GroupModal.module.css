@@ -1,7 +1,6 @@
 .expenseActions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-2);
 }
 .actions {
@@ -68,8 +67,7 @@
   .actions {
     gap: 8px;
   }
-  .actions button,
-  .expenseActions button {
+  .actions button {
     flex: 1;
   }
   .detailAmount {

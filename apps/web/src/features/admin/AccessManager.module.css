@@ -5,7 +5,7 @@
   margin-bottom: var(--space-4);
 }
 .page {
-  max-width: 800px;
+  max-width: var(--page-width);
   margin: 0 auto;
   padding: var(--space-6) var(--space-5) var(--space-7);
 }

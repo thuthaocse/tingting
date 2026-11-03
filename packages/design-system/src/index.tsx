@@ -182,6 +182,8 @@ export { searchKey } from './utils/inputs.mjs';
 export { MoneyInput } from './components/MoneyInput';
 export { SearchSelect } from './components/SearchSelect';
 export {
+  SunIcon,
+  MoonIcon,
   PlusIcon,
   CopyIcon,
   ChevronDownIcon,

@@ -87,7 +87,7 @@
   background: var(--color-brand);
 }
 .actionSwatch {
-  background: var(--color-action);
+  background: var(--color-action-bg);
   color: var(--color-on-action);
 }
 .positiveSwatch {

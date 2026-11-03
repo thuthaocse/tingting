@@ -31,7 +31,7 @@ export default function PersonalBalances({
         />
       )}
       {!outgoing.length && !incoming.length && (
-        <p className={s.settled}>✓ Bạn đã thanh toán hết. Nhẹ lòng rồi!</p>
+        <p className={s.settled}>{group.expenses.length ? '✓ Bạn đã thanh toán hết. Nhẹ lòng rồi!' : '✓ Không có khoản nợ.'}</p>
       )}
     </div>
   );

@@ -7,14 +7,14 @@
   padding: 9px 17px;
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
-  background: var(--color-action);
+  background: var(--color-action-bg);
   color: var(--color-on-action);
   font-weight: 600;
   font-size: 0.875rem;
   transition: background 0.15s;
 }
 .button:hover {
-  background: var(--color-action-hover);
+  background: var(--color-action-bg-hover);
 }
 .secondary {
   background: var(--color-surface);
@@ -35,6 +35,9 @@
 .danger {
   color: var(--color-danger);
   background: var(--color-danger-bg);
+}
+.danger:hover {
+  background: var(--color-danger-border);
 }
 .small {
   font-size: 0.75rem;

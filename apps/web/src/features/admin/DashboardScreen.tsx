@@ -18,11 +18,6 @@ export default function DashboardScreen({ model }: { model: TingtingModel }) {
         </div>
         {model.canCreate && <Button onClick={() => setModal('create')}>+ Tạo sổ chi tiêu</Button>}
       </div>
-      {model.admin && (
-        <nav className={s.managementLinks} aria-label="Quản lý">
-          <a href="/admin/access">Quản lý tài khoản và vai trò</a>
-        </nav>
-      )}
       {error && (
         <p role="alert" className={s.error}>
           {error}

@@ -1,5 +1,4 @@
 .topbar {
-  --header-page-width: 1060px;
   position: sticky;
   top: 0;
   z-index: 40;
@@ -9,14 +8,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4) max(var(--space-5), calc((100vw - var(--header-page-width)) / 2 + var(--space-5)));
+  padding: var(--space-4) max(var(--space-5), calc((100vw - var(--page-width)) / 2 + var(--space-5)));
   gap: var(--space-4);
-}
-.groupHeader {
-  --header-page-width: 960px;
-}
-.accessHeader {
-  --header-page-width: 800px;
 }
 .brandNavigation {
   display: flex;
@@ -34,10 +27,12 @@
 .navigation { display: flex; align-items: center; gap: var(--space-2); }
 .navigation a { padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); text-decoration: none; font-size: var(--font-small); font-weight: 600; }
 .navigation a[aria-current="page"] { background: var(--color-soft); color: var(--color-action); }
+.themeLabel,
 .logoutLabel {
   display: none;
 }
 @media (max-width: 640px) {
+  .menuPanel .themeLabel,
   .logoutLabel {
     display: inline;
   }
