@@ -24,8 +24,9 @@ export default function SettlementForm({
   const formId = useId();
   const [amount, setAmount] = useState(value?.amount || 0);
   const [draftId] = useState(() => value?.id || crypto.randomUUID());
-  const [from, setFrom] = useState(value?.fromId || identity),
-    [to, setTo] = useState(value?.toId || g.members.find((m) => m.id !== identity)?.id || '');
+  const initialFrom = value?.fromId || identity || g.members[0]?.id || '';
+  const [from, setFrom] = useState(initialFrom),
+    [to, setTo] = useState(value?.toId || g.members.find((m) => m.id !== initialFrom)?.id || '');
   return (
     <Modal
       title={value?.id ? 'Chỉnh sửa thanh toán' : 'Thanh toán'}

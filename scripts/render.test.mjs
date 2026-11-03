@@ -130,7 +130,14 @@ test('Vite renders shared design-system components and initial screens without a
     assert.match(header, /Thảo Trịnh/);
     assert.match(header, /href="\/"[^>]*>Sổ chi tiêu/);
     assert.match(header, /href="\/teams"[^>]*>Hội nhóm/);
+    assert.doesNotMatch(header, /href="\/admin\/access"/);
+    const adminHeader = renderToString(
+      createElement(AppHeader, { model: { viewer: { name: 'Thảo Trịnh' }, admin: true, path: '/admin/access', logout: () => {} } }),
+    );
+    assert.match(adminHeader, /href="\/admin\/access" aria-current="page">Tài khoản/);
     assert.match(header, /aria-label="Menu"/);
+    assert.match(header, /aria-label="Chuyển sang giao diện tối"/);
+    assert.match(header, /Giao diện tối/);
     assert.match(header, /aria-label="Đăng xuất"/);
     assert.match(header, /<span[^>]*>Đăng xuất<\/span>/);
     assert.doesNotMatch(header, /Chia sẻ|Cài đặt nhóm/);
@@ -159,6 +166,19 @@ test('Vite renders shared design-system components and initial screens without a
     );
     assert.match(adminGroup, /Cài đặt sổ/);
     assert.match(adminGroup, /Chia sẻ sổ/);
+    assert.match(adminGroup, /Cài đặt[\s\S]*>Thanh toán<\/button>/);
+    const emptyDebts = renderToString(
+      createElement(GroupScreen, { g: group, model: { ...groupModel, tab: 'balances' } }),
+    );
+    assert.match(emptyDebts, /Không có khoản nợ/);
+    assert.doesNotMatch(emptyDebts, /Cả nhóm đã thanh toán hết/);
+    const settledDebts = renderToString(
+      createElement(GroupScreen, {
+        g: { ...group, expenses: [{ id: 'e' }] },
+        model: { ...groupModel, tab: 'balances' },
+      }),
+    );
+    assert.match(settledDebts, /Cả nhóm đã thanh toán hết/);
     assert.doesNotMatch(signedInGroup, /♧/);
     const guestGroup = renderToString(
       createElement(GroupScreen, {
@@ -167,6 +187,7 @@ test('Vite renders shared design-system components and initial screens without a
       }),
     );
     assert.match(guestGroup, /Bạn là ai/);
+    assert.doesNotMatch(guestGroup, />Thanh toán<\/button>/);
     const { default: Activity } = await server.ssrLoadModule('/src/features/activity/Activity.tsx');
     const settlementOnly = renderToString(createElement(Activity, {
       g: { ...group, settlements: [{ id: 's', date: '2026-11-02', fromId: 'a', toId: 'b', amount: 1000 }] },

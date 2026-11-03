@@ -3,7 +3,7 @@
   font-size: 0.8125rem;
 }
 .page {
-  max-width: 960px;
+  max-width: var(--page-width);
   margin: 0 auto;
   padding: 32px 24px 96px;
 }
@@ -123,13 +123,13 @@
 }
 .fab {
   position: fixed;
-  right: max(24px, calc((100vw - 960px) / 2 + 24px));
+  right: max(24px, calc((100vw - var(--page-width)) / 2 + 24px));
   bottom: 28px;
   border: 1px solid var(--color-border);
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--color-action);
+  background: var(--color-action-bg);
   color: var(--color-on-action);
   box-shadow: var(--shadow-floating);
   padding: 0;

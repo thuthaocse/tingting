@@ -5,7 +5,9 @@ import s from './EmptyState.module.css';
 export default function EmptyState({ children, compact = false }: { children: ReactNode; compact?: boolean }) {
   return (
     <div className={`${s.empty} ${compact ? s.compact : ''}`}>
-      <img src={illustration} alt="" aria-hidden="true" />
+      <span className={s.illustration}>
+        <img src={illustration} alt="" aria-hidden="true" />
+      </span>
       {children}
     </div>
   );

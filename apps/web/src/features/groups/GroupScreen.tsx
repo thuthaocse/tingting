@@ -62,6 +62,11 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
             <SettingsIcon /> Cài đặt
           </Button>
         )}
+        {model.canEdit && (
+          <Button variant="secondary" small onClick={() => { setSettlement(undefined); setModal('settlement'); }}>
+            Thanh toán
+          </Button>
+        )}
       </div>
       {error && (
         <p role="alert" className={s.error}>
@@ -142,7 +147,13 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
                     )}
                   </div>
                 ))}
-                {!allDebts.length && <EmptyState compact><p>🎉 Cả nhóm đã thanh toán hết.</p></EmptyState>}
+                {!allDebts.length && (
+                  <div className={s.empty}>
+                    <EmptyState compact>
+                      <p>{g.expenses.length ? '🎉 Cả nhóm đã thanh toán hết.' : 'Không có khoản nợ.'}</p>
+                    </EmptyState>
+                  </div>
+                )}
                 <div className={s.total}>
                   <span className={s.muted}>Còn cần thanh toán</span>
                   <strong>{money(allDebts.reduce((v, d) => v + d.amount, 0))}</strong>
