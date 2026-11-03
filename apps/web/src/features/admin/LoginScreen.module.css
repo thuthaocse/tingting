@@ -21,7 +21,18 @@
   text-align: left;
 }
 .brand {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
   margin-bottom: var(--space-2);
+}
+.preferences {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: var(--space-1);
 }
 .login h1 {
   font-size: 1.6rem;

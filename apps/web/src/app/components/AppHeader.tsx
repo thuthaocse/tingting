@@ -1,9 +1,10 @@
 import { t as translate } from '../i18n/language';
-import { Avatar, Button, Logo, LogoutIcon, MenuIcon, MoonIcon, SunIcon } from '@tingting/design-system';
+import { Avatar, Button, Logo, LogoutIcon, MenuIcon } from '@tingting/design-system';
 import type { TingtingModel } from '../hooks/useTingting';
 import { useTheme } from '../hooks/useTheme';
 import { useHeaderMenu } from '../hooks/useHeaderMenu';
 import LanguageSelect from './LanguageSelect';
+import ThemeButton from './ThemeButton';
 import s from './AppHeader.module.css';
 export default function AppHeader({ model }: { model: TingtingModel }) {
   const { menuRef, close } = useHeaderMenu();
@@ -30,7 +31,7 @@ export default function AppHeader({ model }: { model: TingtingModel }) {
                 <Account model={model} />
                 <Navigation model={model} />
                 <LanguageSelect align="start" showLabel />
-                <ThemeButton theme={theme} onToggle={toggleTheme} />
+                <ThemeButton theme={theme} onToggle={toggleTheme} showLabel className={s.iconButton} />
                 <Logout model={model} />
               </div>
             </div>
@@ -69,16 +70,6 @@ function Logout({ model }: { model: TingtingModel }) {
     <Button variant="quiet" small className={s.iconButton} aria-label={translate("Đăng xuất")} title={translate("Đăng xuất")} onClick={() => void model.logout()}>
       <LogoutIcon />
       <span className={s.logoutLabel}>{translate("Đăng xuất")}</span>
-    </Button>
-  );
-}
-
-function ThemeButton({ theme, onToggle }: { theme: 'light' | 'dark'; onToggle: () => void }) {
-  const label = theme === 'dark' ? translate("Chuyển sang giao diện sáng") : translate("Chuyển sang giao diện tối");
-  return (
-    <Button type="button" variant="quiet" className={`${s.iconButton} ${s.themeButton}`} aria-label={label} title={label} onClick={onToggle}>
-      {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-      <span className={s.themeLabel}>{theme === 'dark' ? translate("Giao diện sáng") : translate("Giao diện tối")}</span>
     </Button>
   );
 }

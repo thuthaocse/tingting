@@ -2,15 +2,21 @@ import { t as translate } from '../../app/i18n/language';
 import { Badge, Button, Logo } from '@tingting/design-system';
 import type { TingtingModel } from '../../app/hooks/useTingting';
 import LanguageSelect from '../../app/components/LanguageSelect';
+import ThemeButton from '../../app/components/ThemeButton';
+import { useTheme } from '../../app/hooks/useTheme';
 import s from './LoginScreen.module.css';
 export default function LoginScreen({ model }: { model: TingtingModel }) {
+  const { theme, toggleTheme } = useTheme();
   return (
     <main className={s.center}>
       <div className={`${s.card} ${s.login}`}>
         <div className={s.brand}>
           <Logo />
+          <div className={s.preferences}>
+            <LanguageSelect />
+            <ThemeButton theme={theme} onToggle={toggleTheme} />
+          </div>
         </div>
-        <LanguageSelect align="start" />
         <Badge>{translate("CHIA SẺ CHI TIÊU")}</Badge>
         <h1>{translate("Nhẹ tiền, nhẹ lòng.")}</h1>
         <p className={s.muted}>
