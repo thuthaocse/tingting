@@ -1,6 +1,6 @@
 ---
 name: documentation-conventions
-description: Create, edit, or review documentation in the Tingting repository using English throughout. Applies to README files, guides, architecture notes, verification reports, and project skill instructions.
+description: Create, edit, or review documentation in the TingTing repository using English throughout. Applies to README files, guides, architecture notes, verification reports, and project skill instructions.
 ---
 
 # Documentation conventions

@@ -1,6 +1,6 @@
 ---
 name: commit-conventions
-description: Write commit messages for the Tingting repository using the project's type and scope convention. Apply when creating or rewriting commits in this repository.
+description: Write commit messages for the TingTing repository using the project's type and scope convention. Apply when creating or rewriting commits in this repository.
 ---
 
 # Commit conventions
