@@ -1,3 +1,25 @@
+.amountSection {
+  display: grid;
+  gap: var(--space-2);
+}
+.amountRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-2);
+}
+.amountRow label {
+  flex: 1 1 140px;
+  min-width: 0;
+}
+.amountInput,
+.fullDebt {
+  height: 48px;
+}
+.amountHelp {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
 .notice {
   background: var(--color-soft);
   padding: 11px 14px;

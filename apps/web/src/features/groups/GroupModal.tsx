@@ -1,3 +1,4 @@
+import { t as translate } from '../../app/i18n/language';
 import { useId } from 'react';
 import { Badge, Button, Modal } from '@tingting/design-system';
 import { money } from '../../domain.mjs';
@@ -50,6 +51,7 @@ export default function GroupModal({ model }: { model: TingtingModel }) {
       <SettlementForm
         g={g}
         value={settlement}
+        debts={model.allDebts}
         identity={identity}
         busy={busy}
         alert={alert}
@@ -63,43 +65,43 @@ export default function GroupModal({ model }: { model: TingtingModel }) {
       key={modal}
       title={
         {
-          create: 'Tạo sổ chi tiêu mới',
-          settings: 'Cài đặt sổ chi tiêu',
-          detail: 'Chi tiết khoản chi',
-          settlement: settlement?.id ? 'Chỉnh sửa thanh toán' : 'Thanh toán',
-          'settlement-detail': 'Chi tiết thanh toán',
+          create: translate("Tạo sổ chi tiêu mới"),
+          settings: translate("Cài đặt sổ chi tiêu"),
+          detail: translate("Chi tiết khoản chi"),
+          settlement: settlement?.id ? translate("Chỉnh sửa thanh toán") : translate("Thanh toán"),
+          'settlement-detail': translate("Chi tiết thanh toán"),
         }[modal || ''] || ''
       }
       onClose={() => setModal(null)}
       footer={
         modal === 'create' ? (
           <Button loading={busy} type="submit" form={groupFormId} disabled={busy} className={s.createGroupButton}>
-            {busy ? 'Đang lưu…' : 'Tạo sổ chi tiêu & lấy liên kết'}
+            {busy ? translate("Đang lưu…") : translate("Tạo sổ chi tiêu & lấy liên kết")}
           </Button>
         ) : modal === 'settings' ? (
           <div className={s.settingsActions}>
             <Button loading={busy} type="submit" form={groupFormId} disabled={busy}>
-              {busy ? 'Đang lưu…' : 'Lưu thay đổi'}
+              {busy ? translate("Đang lưu…") : translate("Lưu thay đổi")}
             </Button>
             <Button variant="secondary" disabled={busy} onClick={() => {
-              if (confirm('Đổi liên kết sẽ vô hiệu hóa liên kết cũ. Tiếp tục?'))
+              if (confirm(translate("Đổi liên kết sẽ vô hiệu hóa liên kết cũ. Tiếp tục?")))
                 void mutate('rotateLink');
             }}>
-              Đổi liên kết
+              {translate("Đổi liên kết")}
             </Button>
           </div>
         ) : modal === 'detail' && expense && model.canEdit && (
           <div className={s.expenseActions}>
-            <Button onClick={() => setModal('expense')}>Chỉnh sửa</Button>
+            <Button onClick={() => setModal('expense')}>{translate("Chỉnh sửa")}</Button>
             <Button
               variant="danger"
               disabled={busy}
               onClick={() => {
-                if (confirm('Xóa khoản chi này? Số dư sẽ được tính lại.'))
+                if (confirm(translate("Xóa khoản chi này? Số dư sẽ được tính lại.")))
                   void mutate('deleteExpense', expense.id);
               }}
             >
-              Xóa khoản chi
+              {translate("Xóa khoản chi")}
             </Button>
           </div>
         )
@@ -131,22 +133,22 @@ export default function GroupModal({ model }: { model: TingtingModel }) {
             <h2>{expense.title}</h2>
             <p className={s.detailAmount}>{money(expense.amount)}</p>
           </div>
-          <section aria-label="Thông tin khoản chi">
+          <section aria-label={translate("Thông tin khoản chi")}>
             <div className={s.detailRow}>
-              <span>Người trả tiền</span>
+              <span>{translate("Người trả tiền")}</span>
               <strong>{name(g, expense.payerId)}</strong>
             </div>
             <div className={s.detailRow}>
-              <span>Ngày</span>
+              <span>{translate("Ngày")}</span>
               <strong>{expense.date}</strong>
             </div>
             <div className={s.detailRow}>
-              <span>Ghi chú</span>
+              <span>{translate("Ghi chú")}</span>
               <strong>{expense.note || '—'}</strong>
             </div>
           </section>
           <section className={s.detailSection}>
-            <h3>Chia cho {expense.shares.length} người</h3>
+            <h3>{translate("Chia cho")} {expense.shares.length} {translate("người")}</h3>
             {expense.shares.map((x) => (
               <div className={s.detailRow} key={x.memberId}>
                 <span>{name(g, x.memberId)}</span>
@@ -158,35 +160,35 @@ export default function GroupModal({ model }: { model: TingtingModel }) {
       )}
       {g && modal === 'settlement-detail' && settlement?.id && (
         <>
-          <Badge positive>Đã ghi nhận thanh toán</Badge>
+          <Badge positive>{translate("Đã ghi nhận thanh toán")}</Badge>
           <p className={s.detailAmount}>{money(settlement.amount || 0)}</p>
           <div className={s.detailRow}>
-            <span>Người trả</span>
+            <span>{translate("Người trả")}</span>
             <strong>{name(g, settlement.fromId!)}</strong>
           </div>
           <div className={s.detailRow}>
-            <span>Người nhận</span>
+            <span>{translate("Người nhận")}</span>
             <strong>{name(g, settlement.toId!)}</strong>
           </div>
           <div className={s.detailRow}>
-            <span>Ngày</span>
+            <span>{translate("Ngày")}</span>
             <strong>{settlement.date}</strong>
           </div>
           <p>{settlement.note}</p>
           {model.canEdit && (
             <div className={s.actions}>
               <Button onClick={() => setModal('settlement')}>
-                Chỉnh sửa
+                {translate("Chỉnh sửa")}
               </Button>
               <Button
                 variant="danger"
                 disabled={busy}
                 onClick={() => {
-                  if (confirm('Xóa bản ghi thanh toán này?'))
+                  if (confirm(translate("Xóa bản ghi thanh toán này?")))
                     void mutate('deleteSettlement', settlement.id);
                 }}
               >
-                Xóa bản ghi
+                {translate("Xóa bản ghi")}
               </Button>
             </div>
           )}

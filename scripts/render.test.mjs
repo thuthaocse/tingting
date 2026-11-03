@@ -200,13 +200,14 @@ test('Vite renders shared design-system components and initial screens without a
     assert.doesNotMatch(guestGroup, />Thêm khoản chi<\/button>/);
     const payment = renderToString(createElement(GroupModal, {
       model: {
-        g: group, modal: 'settlement', canEdit: true, busy: false, identity: 'a',
+        g: group, modal: 'settlement', canEdit: true, busy: false, identity: 'a', allDebts: [debt],
         settlement: { fromId: 'a', toId: 'b', amount: 1000 }, setModal: () => {},
       },
     }));
     const paymentFormId = payment.match(/<form id="([^"]+)"/)[1];
     assert.match(payment, new RegExp(`form="${paymentFormId}"`));
     assert.match(payment, /Chỉ ghi nhận khoản trả[\s\S]*Thanh toán<\/button>/);
+    assert.match(payment, /Toàn bộ nợ/);
     const settings = renderToString(createElement(GroupModal, {
       model: { g: group, modal: 'settings', admin: true, teams: [], busy: false, setModal: () => {} },
     }));
