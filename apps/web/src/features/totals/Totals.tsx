@@ -10,25 +10,23 @@ export default function Totals({ g }: { g: Group }) {
     <>
       <div className={s.contentHeader}>
         <h2>Tổng chi</h2>
-        <div className={s.monthFilter}>
-          <SearchSelect
-            label="Lọc theo tháng"
-            value={month || 'all'}
-            onChange={(value) => setMonth(value === 'all' ? '' : value)}
-            placeholder="Tất cả thời gian"
-            searchPlaceholder="Tìm tháng…"
-            options={[
-              { id: 'all', label: 'Tất cả thời gian' },
-              ...Array.from(new Set(g.expenses.map((expense) => expense.date.slice(0, 7))))
-                .sort()
-                .reverse()
-                .map((value) => ({
-                  id: value,
-                  label: `Tháng ${Number(value.slice(5))}/${value.slice(0, 4)}`,
-                })),
-            ]}
-          />
-        </div>
+        <SearchSelect
+          label="Lọc theo tháng"
+          value={month || 'all'}
+          onChange={(value) => setMonth(value === 'all' ? '' : value)}
+          placeholder="Tất cả thời gian"
+          searchPlaceholder="Tìm tháng…"
+          options={[
+            { id: 'all', label: 'Tất cả thời gian' },
+            ...Array.from(new Set(g.expenses.map((expense) => expense.date.slice(0, 7))))
+              .sort()
+              .reverse()
+              .map((value) => ({
+                id: value,
+                label: `Tháng ${Number(value.slice(5))}/${value.slice(0, 4)}`,
+              })),
+          ]}
+        />
       </div>
       <div className={s.stat}>
         <span className={s.muted}>Tổng chi của nhóm</span>

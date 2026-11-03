@@ -7,17 +7,26 @@ export default function AppHeader({ model }: { model: TingtingModel }) {
   return (
     <header className={s.topbar}>
       <Logo />
-      <div className={s.desktopActions}>
-        <HeaderActions model={model} />
-      </div>
-      <details ref={menuRef} className={s.mobileMenu}>
-        <summary aria-label="Menu tài khoản" title="Menu tài khoản">
-          <MenuIcon />
-        </summary>
-        <div className={s.menuPanel} onClick={close}>
-          <HeaderActions model={model} />
-        </div>
-      </details>
+      {model.viewer ? (
+        <>
+          <div className={s.desktopActions}>
+            <HeaderActions model={model} />
+          </div>
+          <TeamsLink model={model} className={s.mobileTeamsLink} />
+          <details ref={menuRef} className={s.mobileMenu}>
+            <summary aria-label="Menu tài khoản" title="Menu tài khoản">
+              <MenuIcon />
+            </summary>
+            <div className={s.menuPanel} onClick={close}>
+              <HeaderActions model={model} />
+            </div>
+          </details>
+        </>
+      ) : model.g && (
+        <Button disabled={!model.googleEnabled} onClick={model.login}>
+          Đăng nhập
+        </Button>
+      )}
     </header>
   );
 }
@@ -26,6 +35,7 @@ function HeaderActions({ model }: { model: TingtingModel }) {
     <div className={s.actions}>
       {model.viewer && (
         <>
+          <TeamsLink model={model} className={s.teamsLink} />
           <div className={s.account}>
             <Avatar name={model.viewer.name} />
             <span className={s.accountName} title={model.viewer.name}>
@@ -45,11 +55,22 @@ function HeaderActions({ model }: { model: TingtingModel }) {
           </Button>
         </>
       )}
-      {!model.viewer && model.g && (
-        <Button small disabled={!model.googleEnabled} onClick={model.login}>
-          Đăng nhập
-        </Button>
-      )}
+
     </div>
+  );
+}
+
+function TeamsLink({ model, className }: { model: TingtingModel; className: string }) {
+  return (
+    <a
+      className={className}
+      href="/teams"
+      onClick={(event) => {
+        event.preventDefault();
+        model.navigate('/teams');
+      }}
+    >
+      Teams
+    </a>
   );
 }

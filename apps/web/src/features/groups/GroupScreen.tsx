@@ -3,12 +3,14 @@ import { money } from '../../domain.mjs';
 import { MemberSelect, name } from '../../shared/forms';
 import type { Group } from '../../types';
 import Activity from '../activity/Activity';
+import ActivityLog from '../activity/ActivityLog';
 import PersonalBalances from '../balances/PersonalBalances';
 import Totals from '../totals/Totals';
 const tabs = [
-  { id: 'activity', label: 'Hoạt động' },
+  { id: 'activity', label: 'Khoản chi' },
   { id: 'balances', label: 'Khoản nợ' },
   { id: 'totals', label: 'Tổng chi' },
+  { id: 'log', label: 'Hoạt động' },
 ];
 import type { TingtingModel } from '../../app/hooks/useTingting';
 import s from './GroupScreen.module.css';
@@ -39,7 +41,7 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
           <div>
             <h1>{g.name}</h1>
             <p className={s.muted}>
-              {g.members.length} thành viên · VND {g.archived ? '· Đã lưu trữ' : ''}
+              {g.members.length} thành viên · VND
             </p>
           </div>
         </div>
@@ -66,10 +68,15 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
         </p>
       )}
       {!model.viewer && (
-        <div className={s.identity}>
-          <span className={s.muted}>Bạn là ai?</span>
-          <MemberSelect g={g} value={identity} onChange={choose} />
-        </div>
+        <>
+          <p className={s.loginNotice}>
+            Đăng nhập để chỉnh sửa, tạo nhóm và quản lý chi tiêu của bạn.
+          </p>
+          <div className={s.identity}>
+            <span className={s.muted}>Bạn là ai?</span>
+            <MemberSelect g={g} value={identity} onChange={choose} label="Bạn là ai?" />
+          </div>
+        </>
       )}
       {identity && (
         <PersonalBalances
@@ -81,8 +88,10 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
         />
       )}
       <section className={s.content}>
-        <div className={s.contentInner}>
-          <Tabs value={tab} onChange={setTab} items={tabs} />
+        <div className={`${s.contentInner} ${tab === 'balances' || tab === 'totals' ? s.contentInnerBottomSpace : ''}`}>
+          <div className={s.stickyTabs}>
+            <Tabs value={tab} onChange={setTab} items={tabs} />
+          </div>
           <div className={s.tabPanel}>
             {tab === 'activity' ? (
               <Activity
@@ -97,6 +106,8 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
                   setModal('settlement-detail');
                 }}
               />
+            ) : tab === 'log' ? (
+              <ActivityLog events={model.activityEvents} />
             ) : tab === 'balances' ? (
               <>
                 <div className={s.contentHeader}>

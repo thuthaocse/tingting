@@ -12,6 +12,7 @@ export type Scalars = {
 
 export type AccessGrant = {
   email: Scalars['String']['output'];
+  hasExplicitGrant: Scalars['Boolean']['output'];
   role: Scalars['String']['output'];
 };
 
@@ -22,6 +23,15 @@ export type AccountDebt = {
   personId: Scalars['String']['output'];
   personName: Scalars['String']['output'];
   token: Scalars['String']['output'];
+};
+
+export type ActivityEvent = {
+  action: Scalars['String']['output'];
+  actorName: Scalars['String']['output'];
+  createdAt: Scalars['String']['output'];
+  entityId?: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  summary: Scalars['String']['output'];
 };
 
 export type Balance = {
@@ -71,7 +81,6 @@ export type ExpenseInput = {
 };
 
 export type Group = {
-  archived: Scalars['Boolean']['output'];
   description: Scalars['String']['output'];
   directDebts: Array<Debt>;
   expenses: Array<Expense>;
@@ -105,25 +114,27 @@ export type MemberInput = {
 };
 
 export type Mutation = {
-  archiveGroup: Group;
   createGroup: Group;
+  createTeam: Team;
   deleteExpense: Group;
   deleteSettlement: Group;
+  deleteTeam: Scalars['Boolean']['output'];
   logout: Scalars['Boolean']['output'];
   rotateLink: Group;
   saveExpense: Group;
   saveSettlement: Group;
   setAccessGrant: Scalars['Boolean']['output'];
   updateGroup: Group;
-};
-
-export type MutationArchiveGroupArgs = {
-  token: Scalars['String']['input'];
-  version: Scalars['Int']['input'];
+  updateTeam: Team;
 };
 
 export type MutationCreateGroupArgs = {
   input: CreateGroupInput;
+};
+
+export type MutationCreateTeamArgs = {
+  members: Array<MemberInput>;
+  name: Scalars['String']['input'];
 };
 
 export type MutationDeleteExpenseArgs = {
@@ -135,6 +146,11 @@ export type MutationDeleteExpenseArgs = {
 export type MutationDeleteSettlementArgs = {
   id: Scalars['String']['input'];
   token: Scalars['String']['input'];
+  version: Scalars['Int']['input'];
+};
+
+export type MutationDeleteTeamArgs = {
+  id: Scalars['String']['input'];
   version: Scalars['Int']['input'];
 };
 
@@ -166,8 +182,16 @@ export type MutationUpdateGroupArgs = {
   version: Scalars['Int']['input'];
 };
 
+export type MutationUpdateTeamArgs = {
+  id: Scalars['String']['input'];
+  members: Array<MemberInput>;
+  name: Scalars['String']['input'];
+  version: Scalars['Int']['input'];
+};
+
 export type Query = {
   accessGrants: Array<AccessGrant>;
+  activity: Array<ActivityEvent>;
   balances: Array<Balance>;
   dashboard: Dashboard;
   debts: Array<Debt>;
@@ -175,6 +199,11 @@ export type Query = {
   group: Group;
   groups: Array<Group>;
   me?: Maybe<Viewer>;
+  teams: Array<Team>;
+};
+
+export type QueryActivityArgs = {
+  token: Scalars['String']['input'];
 };
 
 export type QueryBalancesArgs = {
@@ -212,6 +241,14 @@ export type SettlementInput = {
 export type Share = {
   amount: Scalars['Money']['output'];
   memberId: Scalars['String']['output'];
+};
+
+export type Team = {
+  id: Scalars['String']['output'];
+  members: Array<Member>;
+  name: Scalars['String']['output'];
+  ownerEmail: Scalars['String']['output'];
+  version: Scalars['Int']['output'];
 };
 
 export type UpdateGroupInput = {

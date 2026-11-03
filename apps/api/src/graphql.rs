@@ -9,6 +9,14 @@ pub type ApiSchema = Schema<Query, Mutation, EmptySubscription>;
 pub struct Query;
 #[Object]
 impl Query {
+    async fn activity(
+        &self,
+        ctx: &Context<'_>,
+        token: String,
+    ) -> Result<Vec<crate::activity::ActivityEvent>> {
+        Ok(crate::activity::list(ctx.data_unchecked::<Store>(), &token).await?)
+    }
+
     async fn access_grants(&self, ctx: &Context<'_>) -> Result<Vec<crate::access::AccessGrant>> {
         Ok(
             crate::access::list(ctx.data_unchecked::<Store>(), ctx.data_unchecked::<Actor>())
@@ -30,14 +38,23 @@ impl Query {
     }
 
     async fn groups(&self, ctx: &Context<'_>) -> Result<Vec<Group>> {
-        auth::signed_in(ctx.data_unchecked::<Actor>())?;
+        let actor = ctx.data_unchecked::<Actor>();
+        auth::signed_in(actor)?;
+        let email = &actor.viewer.as_ref().unwrap().email;
         let pool = ctx.data_unchecked::<Store>();
         let groups = repo::all(pool).await?;
         let out = groups
             .into_iter()
+            .filter(|group| crate::dashboard::matched_member(group, email).is_some())
             .map(|group| public_group(group, auth::is_admin(ctx.data_unchecked::<Actor>())))
             .collect();
         Ok(out)
+    }
+    async fn teams(&self, ctx: &Context<'_>) -> Result<Vec<crate::teams::Team>> {
+        Ok(
+            crate::teams::list(ctx.data_unchecked::<Store>(), ctx.data_unchecked::<Actor>())
+                .await?,
+        )
     }
     async fn group(&self, ctx: &Context<'_>, token: String) -> Result<Group> {
         Ok(public_group(
@@ -68,6 +85,47 @@ impl Query {
 pub struct Mutation;
 #[Object]
 impl Mutation {
+    async fn delete_team(&self, ctx: &Context<'_>, id: String, version: i32) -> Result<bool> {
+        Ok(crate::teams::delete(
+            ctx.data_unchecked::<Store>(),
+            ctx.data_unchecked::<Actor>(),
+            &id,
+            version,
+        )
+        .await?)
+    }
+    async fn create_team(
+        &self,
+        ctx: &Context<'_>,
+        name: String,
+        members: Vec<MemberInput>,
+    ) -> Result<crate::teams::Team> {
+        Ok(crate::teams::create(
+            ctx.data_unchecked::<Store>(),
+            ctx.data_unchecked::<Actor>(),
+            name,
+            members,
+        )
+        .await?)
+    }
+    async fn update_team(
+        &self,
+        ctx: &Context<'_>,
+        id: String,
+        version: i32,
+        name: String,
+        members: Vec<MemberInput>,
+    ) -> Result<crate::teams::Team> {
+        Ok(crate::teams::update(
+            ctx.data_unchecked::<Store>(),
+            ctx.data_unchecked::<Actor>(),
+            &id,
+            version,
+            name,
+            members,
+        )
+        .await?)
+    }
     async fn set_access_grant(
         &self,
         ctx: &Context<'_>,
@@ -185,21 +243,10 @@ impl Mutation {
         .await?)
     }
     async fn rotate_link(&self, ctx: &Context<'_>, token: String, version: i32) -> Result<Group> {
-        Ok(services::admin_action(
+        Ok(services::rotate_link(
             ctx.data_unchecked::<Store>(),
             &token,
             version,
-            true,
-            ctx.data_unchecked::<Actor>(),
-        )
-        .await?)
-    }
-    async fn archive_group(&self, ctx: &Context<'_>, token: String, version: i32) -> Result<Group> {
-        Ok(services::admin_action(
-            ctx.data_unchecked::<Store>(),
-            &token,
-            version,
-            false,
             ctx.data_unchecked::<Actor>(),
         )
         .await?)

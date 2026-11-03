@@ -8,6 +8,8 @@ use uuid::Uuid;
 pub struct StoredGroup {
     pub group: Group,
     pub aliases: Vec<String>,
+    #[serde(default)]
+    pub id_history: Vec<String>,
     pub created_at: i64,
     #[serde(default)]
     pub next_order: i64,

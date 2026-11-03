@@ -6,6 +6,9 @@
   display: grid;
   gap: 18px;
 }
+.copyLink {
+  justify-self: start;
+}
 .form small {
   color: var(--color-muted);
 }

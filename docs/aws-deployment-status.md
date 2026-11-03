@@ -1,6 +1,6 @@
 # AWS deployment status
 
-Tingting is deployed at https://tingting.thaotrinh.site using profile `thao-dev`, region `ap-southeast-2` (Sydney), environment `production`. The application starts with an empty database, as requested.
+TingTing is deployed at https://tingting.thaotrinh.site using profile `thao-dev`, region `ap-southeast-2` (Sydney), environment `production`. The application starts with an empty database, as requested.
 
 ## Deployed resources
 
@@ -27,6 +27,14 @@ Google credentials were read from the Web client JSON in Downloads and uploaded 
 - Frontend assets and the home, group, design-system and admin SPA routes return 200.
 - Login layout checked at mobile and desktop widths.
 - A final Terraform plan reports no changes.
+
+## Latest production update
+
+On 2026-11-03, the existing production Lambda and frontend were updated without applying Terraform infrastructure changes or modifying application data. The Lambda was rebuilt for ARM64 and its update completed successfully. The frontend was published to the existing private S3 bucket, and CloudFront invalidations completed for the home page and the new `/teams` route. The production CloudFront function now rewrites `/teams` to the SPA entry point.
+
+The update includes the Teams GraphQL query and create/update mutations, team membership access checks, optimistic team versions and audit records, and group creation from whole teams or selected team members. The group form searches teams and member names, keeps each team roster collapsed by default, and synchronizes selected members with a removable list. Team member emails are optional. The update also publishes the group activity feed, removes group archiving from the application schema and UI, and preserves existing group transactions and audit records.
+
+Post-deployment checks returned HTTP 200 for `/`, `/teams`, `/g/smoke`, and `/health`. Production GraphQL introspection confirmed the Team type and mutations and no longer exposes the archived group field.
 
 The first deployment region, ap-southeast-1, was rejected by the project's managed SCP. After the user granted administrator permissions and selected ap-southeast-2, deployment succeeded. The three global resources created during the earlier attempt were reused. No SCP was modified and no advanced features were activated.
 

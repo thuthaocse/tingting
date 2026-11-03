@@ -1,5 +1,5 @@
 use aws_sdk_dynamodb::{
-    types::{AttributeValue as A, Put, TransactWriteItem, Update},
+    types::{AttributeValue as A, Delete, Put, TransactWriteItem, Update},
     Client,
 };
 use serde::{de::DeserializeOwned, Serialize};
@@ -69,6 +69,21 @@ impl Store {
         head.insert("revision".into(), A::S(revision));
         head.insert("chunks".into(), A::N(count.to_string()));
         self.conditional_put(head, expected)
+    }
+    pub fn prepare_delete(
+        &self,
+        kind: &str,
+        key: &str,
+        expected: &str,
+    ) -> Result<TransactWriteItem, String> {
+        let delete = Delete::builder()
+            .table_name(&self.table)
+            .set_key(Some(keys(kind, key)))
+            .condition_expression("revision = :expected")
+            .expression_attribute_values(":expected", A::S(expected.into()))
+            .build()
+            .map_err(error)?;
+        Ok(TransactWriteItem::builder().delete(delete).build())
     }
     pub async fn commit(&self, mut writes: Vec<TransactWriteItem>) -> Result<(), String> {
         writes.push(self.advance_stamp()?);
@@ -325,7 +340,7 @@ mod tests {
             .unwrap();
         let cookie = format!("lilac_session={token}");
         assert!(
-            crate::auth::actor(&store, Some(&cookie), false)
+            crate::auth::actor(&store, Some(&cookie))
                 .await
                 .viewer
                 .unwrap()
@@ -349,7 +364,7 @@ mod tests {
             .await
             .unwrap();
         assert!(
-            !crate::auth::actor(&store, Some(&cookie), false)
+            !crate::auth::actor(&store, Some(&cookie))
                 .await
                 .viewer
                 .unwrap()
@@ -358,7 +373,7 @@ mod tests {
         crate::auth::revoke(&store, &crate::auth::digest(&token))
             .await
             .unwrap();
-        assert!(crate::auth::actor(&store, Some(&cookie), false)
+        assert!(crate::auth::actor(&store, Some(&cookie))
             .await
             .viewer
             .is_none());

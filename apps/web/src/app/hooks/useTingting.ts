@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigation } from './useNavigation';
-import { api, type Viewer, type Dashboard } from '../../api';
+import { api, type Viewer, type Dashboard, type Team, type ActivityEvent } from '../../api';
 import type { Group, Expense, Settlement, Debt } from '../../types';
 import { viewingIdentity } from '../../features/identity/utils/viewing-identity.mjs';
 import { err } from '../../shared/forms';
@@ -12,6 +12,12 @@ export function useTingting() {
   const [viewer, setViewer] = useState<Viewer | null>(null);
   const [googleEnabled, setGoogleEnabled] = useState(false);
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
+  const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [teamToEdit, setTeamToEdit] = useState<Team | undefined>();
+  const [teamsError, setTeamsError] = useState('');
+  const [teamEditorError, setTeamEditorError] = useState('');
+  const [teamModal, setTeamModal] = useState(false);
   const [g, setG] = useState<Group | null>(null),
     [groups, setGroups] = useState<Group[]>([]),
     [admin, setAdmin] = useState(false),
@@ -32,6 +38,7 @@ export function useTingting() {
   };
   const load = async () => {
     const request = ++loadRequest.current;
+    setTeamsError('');
     setError(
       new URLSearchParams(location.search).has('auth_error')
         ? 'Chưa thể đăng nhập Google. Vui lòng thử lại.'
@@ -53,6 +60,7 @@ export function useTingting() {
             '/g/' + x.token + location.search + location.hash,
           );
         setG(x);
+        setActivityEvents(await api.activity(x.token).catch(() => []));
         const saved =
           localStorage.getItem(`tingting:identity:${x.id}`) ||
           localStorage.getItem(`lilac:identity:${x.id}`) ||
@@ -60,13 +68,22 @@ export function useTingting() {
         setIdentity(viewingIdentity(x, !!session.me, saved));
       } else {
         if (session.me) {
-          const [list, summary] = await Promise.all([api.groups(), api.dashboard()]);
+          const [groupsResult, dashboardResult, teamsResult] = await Promise.allSettled([
+            api.groups(),
+            api.dashboard(),
+            api.teams(),
+          ]);
           if (request !== loadRequest.current) return;
-          setGroups(list);
-          setDashboard(summary);
+          if (teamsResult.status === 'fulfilled') setTeams(teamsResult.value);
+          else setTeamsError('Không thể tải danh sách team. Vui lòng thử lại.');
+          if (groupsResult.status === 'fulfilled') setGroups(groupsResult.value);
+          if (dashboardResult.status === 'fulfilled') setDashboard(dashboardResult.value);
+          if (groupsResult.status === 'rejected') throw groupsResult.reason;
+          if (dashboardResult.status === 'rejected') throw dashboardResult.reason;
         } else {
           setGroups([]);
           setDashboard(null);
+          setTeams([]);
         }
       }
     } catch (e) {
@@ -84,6 +101,7 @@ export function useTingting() {
   };
   useEffect(() => {
     setG(null);
+    setActivityEvents([]);
     setIdentity('');
     setModal(null);
     setLoading(true);
@@ -95,11 +113,11 @@ export function useTingting() {
   }, [token, preview]);
   useEffect(() => {
     const focus = () => {
-      if (!preview && !document.hidden && !busy && !modal) void load();
+      if (!preview && !document.hidden && !busy && !modal && !teamModal) void load();
     };
     window.addEventListener('focus', focus);
     return () => window.removeEventListener('focus', focus);
-  }, [busy, modal, token, preview]);
+  }, [busy, modal, teamModal, token, preview]);
   const choose = (id: string) => {
     if (g) {
       localStorage.setItem(`tingting:identity:${g.id}`, id);
@@ -113,9 +131,13 @@ export function useTingting() {
     try {
       const x = await api.mutate(action, g.token, g.version, input);
       setG(x);
+      setActivityEvents(await api.activity(x.token).catch(() => []));
       setModal(null);
       notify('Đã lưu thay đổi');
-      if (x.token !== g.token) navigate('/g/' + x.token);
+      if (x.token !== g.token) {
+        if (identity) localStorage.setItem(`tingting:identity:${x.id}`, identity);
+        navigate('/g/' + x.token);
+      }
     } catch (e) {
       setError(err(e));
       if (err(e).includes('CONFLICT')) {
@@ -139,14 +161,13 @@ export function useTingting() {
     out = allDebts.filter((d) => d.fromId === identity),
     incoming = allDebts.filter((d) => d.toId === identity);
   const pay = (d: Debt) => {
-    if (!viewer || g?.archived) return;
+    if (!viewer) return;
     setSettlement({ fromId: d.fromId, toId: d.toId, amount: d.amount });
     setModal('settlement');
   };
   const login = () => {
-    location.assign(
-      '/auth/google/start?return_to=' + encodeURIComponent(token ? '/g/' + token : '/'),
-    );
+    const returnTo = token ? '/g/' + token : ['/teams', '/admin/access'].includes(path) ? path : '/';
+    location.assign('/auth/google/start?return_to=' + encodeURIComponent(returnTo));
   };
   const logout = async () => {
     try {
@@ -155,6 +176,8 @@ export function useTingting() {
       setDashboard(null);
       setAdmin(false);
       setGroups([]);
+      setTeams([]);
+      setTeamModal(false);
       setModal(null);
       await load();
     } catch (error) {
@@ -177,6 +200,48 @@ export function useTingting() {
       setBusy(false);
     }
   };
+  const openTeamEditor = (team?: Team) => {
+    setTeamToEdit(team);
+    setTeamEditorError('');
+    setTeamModal(true);
+  };
+  const closeTeamEditor = () => {
+    setTeamModal(false);
+    setTeamToEdit(undefined);
+    setTeamEditorError('');
+  };
+  const saveTeam = async (name: string, members: unknown[]) => {
+    if (!viewer || busy) return;
+    setBusy(true);
+    setTeamEditorError('');
+    try {
+      const saved = teamToEdit
+        ? await api.updateTeam(teamToEdit.id, teamToEdit.version, name, members)
+        : await api.createTeam(name, members);
+      setTeams((current) => [saved, ...current.filter((team) => team.id !== saved.id)]);
+      closeTeamEditor();
+      notify(teamToEdit ? 'Đã cập nhật team' : 'Đã tạo team');
+    } catch (error) {
+      setTeamEditorError(err(error));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const deleteTeam = async () => {
+    if (!viewer || !teamToEdit || busy) return;
+    setBusy(true);
+    setTeamEditorError('');
+    try {
+      await api.deleteTeam(teamToEdit.id, teamToEdit.version);
+      setTeams((current) => current.filter((team) => team.id !== teamToEdit.id));
+      closeTeamEditor();
+      notify('Đã xóa team');
+    } catch (error) {
+      setTeamEditorError(err(error));
+    } finally {
+      setBusy(false);
+    }
+  };
   return {
     path,
     viewer,
@@ -184,7 +249,7 @@ export function useTingting() {
     navigate,
     googleEnabled,
     dashboard,
-    canEdit: !!viewer && !g?.archived,
+    canEdit: !!viewer,
     login,
     logout,
     createGroup,
@@ -192,8 +257,18 @@ export function useTingting() {
     preview,
     g,
     setG,
+    activityEvents,
     groups,
     setGroups,
+    teams,
+    teamsError,
+    teamToEdit,
+    openTeamEditor,
+    teamModal,
+    closeTeamEditor,
+    teamEditorError,
+    saveTeam,
+    deleteTeam,
     admin,
     setAdmin,
     loading,

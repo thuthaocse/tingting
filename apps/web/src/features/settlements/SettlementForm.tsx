@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Field, Input, MoneyInput } from '@tingting/design-system';
+import { Button, DateInput, Field, Input, MoneyInput } from '@tingting/design-system';
 import { today } from '../../domain.mjs';
 import type { Group, Settlement } from '../../types';
 import { Form, MemberSelect } from '../../shared/forms';
@@ -51,9 +51,7 @@ export default function SettlementForm({
           aria-label="Số tiền"
         />
       </Field>
-      <Field label="Ngày thanh toán">
-        <Input type="date" name="date" defaultValue={value?.date || today()} required />
-      </Field>
+      <DateInput label="Ngày thanh toán" name="date" defaultValue={value?.date || today()} required />
       <Field label="Ghi chú (không bắt buộc)">
         <Input
           name="note"

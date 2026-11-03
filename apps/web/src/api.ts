@@ -1,7 +1,8 @@
 import type { Group } from './types';
 export type { Viewer, Dashboard, AccountDebt } from './graphql/generated';
-import type { Viewer, Dashboard } from './graphql/generated';
-const fields = `id name description token version archived viewerMemberId directDebts { fromId toId amount } simplifiedDebts { fromId toId amount } members { id name email } expenses { id createdOrder title amount payerId date note shares { memberId amount } } settlements { id createdOrder fromId toId amount date note }`;
+import type { Viewer, Dashboard, Team, ActivityEvent, AccessGrant } from './graphql/generated';
+export type { Team, ActivityEvent } from './graphql/generated';
+const fields = `id name description token version viewerMemberId directDebts { fromId toId amount } simplifiedDebts { fromId toId amount } members { id name email } expenses { id createdOrder title amount payerId date note shares { memberId amount } } settlements { id createdOrder fromId toId amount date note }`;
 export async function graphql<T>(
   query: string,
   variables: Record<string, unknown> = {},
@@ -11,17 +12,21 @@ export async function graphql<T>(
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query, variables }),
+  }).catch(() => {
+    throw Error('Không thể kết nối máy chủ. Vui lòng thử lại.');
   });
-  if (!r.ok) throw Error('Không thể kết nối máy chủ');
-  const b = await r.json();
+  if (!r.ok) throw Error('Không thể kết nối máy chủ. Vui lòng thử lại.');
+  const b = await r.json().catch(() => {
+    throw Error('Không thể đọc phản hồi từ máy chủ. Vui lòng thử lại.');
+  });
   if (b.errors) throw Error(b.errors[0].message);
   return b.data;
 }
 export const api = {
   grants: async () =>
     (
-      await graphql<{ accessGrants: { email: string; role: string }[] }>(
-        '{accessGrants{email role}}',
+      await graphql<{ accessGrants: AccessGrant[] }>(
+        '{accessGrants{email role hasExplicitGrant}}',
       )
     ).accessGrants,
   setGrant: (email: string, role: string | null) =>
@@ -30,12 +35,32 @@ export const api = {
       role,
     }),
   groups: async () => (await graphql<{ groups: Group[] }>(`query { groups { ${fields} } }`)).groups,
+  teams: async () => (await graphql<{ teams: Team[] }>('{ teams { id name version ownerEmail members { id name email } } }')).teams,
+  createTeam: async (name: string, members: unknown[]) => (await graphql<{ createTeam: Team }>(
+    'mutation($name:String!,$members:[MemberInput!]!){createTeam(name:$name,members:$members){id name version ownerEmail members{id name email}}}',
+    { name, members },
+  )).createTeam,
+  updateTeam: async (id: string, version: number, name: string, members: unknown[]) => (await graphql<{ updateTeam: Team }>(
+    'mutation($id:String!,$version:Int!,$name:String!,$members:[MemberInput!]!){updateTeam(id:$id,version:$version,name:$name,members:$members){id name version ownerEmail members{id name email}}}',
+    { id, version, name, members },
+  )).updateTeam,
+  deleteTeam: async (id: string, version: number) => (await graphql<{ deleteTeam: boolean }>(
+    'mutation($id:String!,$version:Int!){deleteTeam(id:$id,version:$version)}',
+    { id, version },
+  )).deleteTeam,
   group: async (token: string) =>
     (
       await graphql<{ group: Group }>(`query($token:String!){group(token:$token){${fields}}}`, {
         token,
       })
     ).group,
+  activity: async (token: string) =>
+    (
+      await graphql<{ activity: ActivityEvent[] }>(
+        'query($token:String!){activity(token:$token){id action summary actorName createdAt entityId}}',
+        { token },
+      )
+    ).activity,
   session: () =>
     graphql<{ me: Viewer | null; googleLoginEnabled: boolean }>(
       'query { me { id email name isAdmin canCreateGroups } googleLoginEnabled }',

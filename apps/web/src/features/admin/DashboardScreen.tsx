@@ -18,9 +18,9 @@ export default function DashboardScreen({ model }: { model: TingtingModel }) {
         {model.canCreate && <Button onClick={() => setModal('create')}>+ Tạo nhóm</Button>}
       </div>
       {model.admin && (
-        <a className={s.adminLink} href="/admin/access">
-          Quản lý tài khoản và vai trò
-        </a>
+        <nav className={s.managementLinks} aria-label="Quản lý">
+          <a href="/admin/access">Quản lý tài khoản và vai trò</a>
+        </nav>
       )}
       {error && (
         <p role="alert" className={s.error}>
@@ -42,7 +42,7 @@ export default function DashboardScreen({ model }: { model: TingtingModel }) {
           />
         </section>
       )}
-      <p className={s.muted}>Tổng từ các nhóm đang hoạt động · Theo email {viewer?.email}</p>
+      <p className={s.muted}>Tổng từ các nhóm bạn tham gia · Theo email {viewer?.email}</p>
       <Input
         aria-label="Tìm nhóm"
         placeholder="Tìm kiếm nhóm…"
@@ -60,22 +60,24 @@ export default function DashboardScreen({ model }: { model: TingtingModel }) {
                 <span aria-hidden="true">↗</span>
               </a>
               <p className={s.muted}>
-                {group.members.length} thành viên{group.archived ? ' · Đã lưu trữ' : ''}
+                {group.members.length} thành viên
               </p>
               {summary?.memberId && (
                 <>
-                  <div className={s.groupAmounts}>
-                    {summary.payable > 0 && (
-                      <span>
-                        Cần trả <b>{money(summary.payable)}</b>
-                      </span>
-                    )}
-                    {summary.receivable > 0 && (
-                      <span>
-                        Được nhận <b>{money(summary.receivable)}</b>
-                      </span>
-                    )}
-                  </div>
+                  {(summary.payable > 0 || summary.receivable > 0) && (
+                    <div className={s.groupAmounts}>
+                      {summary.payable > 0 && (
+                        <span>
+                          Cần trả <b>{money(summary.payable)}</b>
+                        </span>
+                      )}
+                      {summary.receivable > 0 && (
+                        <span>
+                          Được nhận <b>{money(summary.receivable)}</b>
+                        </span>
+                      )}
+                    </div>
+                  )}
                   {owedBy.length > 0 && (
                     <details className={s.owedBy}>
                       <summary>

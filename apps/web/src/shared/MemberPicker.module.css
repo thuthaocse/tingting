@@ -1,0 +1,34 @@
+.trigger.trigger,
+.option.option {
+  width: 100%;
+  min-height: 44px;
+  justify-content: space-between;
+  padding-inline: var(--space-3);
+  text-align: left;
+}
+.trigger.trigger {
+  font-size: 1rem;
+  font-weight: 400;
+}
+.trigger span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.trigger svg {
+  flex-shrink: 0;
+  color: var(--color-muted);
+}
+.options {
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.option.option {
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+.option[aria-pressed='true'] {
+  background: var(--color-soft);
+  color: var(--color-action);
+}

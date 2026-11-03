@@ -1,6 +1,16 @@
 type AccessGrant {
 	email: String!
 	role: String!
+	hasExplicitGrant: Boolean!
+}
+
+type ActivityEvent {
+	id: String!
+	action: String!
+	summary: String!
+	actorName: String!
+	createdAt: String!
+	entityId: String
 }
 
 type AccountDebt {
@@ -64,7 +74,6 @@ type Group {
 	description: String!
 	token: String!
 	version: Int!
-	archived: Boolean!
 	members: [Member!]!
 	expenses: [Expense!]!
 	settlements: [Settlement!]!
@@ -95,6 +104,9 @@ input MemberInput {
 scalar Money
 
 type Mutation {
+	deleteTeam(id: String!, version: Int!): Boolean!
+	createTeam(name: String!, members: [MemberInput!]!): Team!
+	updateTeam(id: String!, version: Int!, name: String!, members: [MemberInput!]!): Team!
 	setAccessGrant(email: String!, role: String): Boolean!
 	logout: Boolean!
 	createGroup(input: CreateGroupInput!): Group!
@@ -104,15 +116,16 @@ type Mutation {
 	saveSettlement(token: String!, version: Int!, input: SettlementInput!): Group!
 	deleteSettlement(token: String!, version: Int!, id: String!): Group!
 	rotateLink(token: String!, version: Int!): Group!
-	archiveGroup(token: String!, version: Int!): Group!
 }
 
 type Query {
+	activity(token: String!): [ActivityEvent!]!
 	accessGrants: [AccessGrant!]!
 	me: Viewer
 	googleLoginEnabled: Boolean!
 	dashboard: Dashboard!
 	groups: [Group!]!
+	teams: [Team!]!
 	group(token: String!): Group!
 	balances(token: String!): [Balance!]!
 	debts(token: String!, simplified: Boolean! = true): [Debt!]!
@@ -126,6 +139,14 @@ type Settlement {
 	amount: Money!
 	date: String!
 	note: String!
+}
+
+type Team {
+	id: String!
+	name: String!
+	version: Int!
+	ownerEmail: String!
+	members: [Member!]!
 }
 
 input SettlementInput {

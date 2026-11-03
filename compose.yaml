@@ -35,7 +35,6 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
-      OPEN_GROUP_CREATION: ${OPEN_GROUP_CREATION:-true}
       RUST_LOG: tingting_api=info,tower_http=info
     ports:
       - '127.0.0.1:8080:8080'

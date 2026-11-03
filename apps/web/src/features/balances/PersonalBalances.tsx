@@ -66,7 +66,7 @@ function BalanceSection({
           <span>{name(group, receive ? d.fromId : d.toId)}</span>
           <strong>{money(d.amount)}</strong>
           {!readOnly && (
-            <Button variant="quiet" small disabled={group.archived} onClick={() => onRecord(d)}>
+            <Button variant="quiet" small onClick={() => onRecord(d)}>
               Thanh toán
             </Button>
           )}

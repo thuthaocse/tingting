@@ -17,9 +17,9 @@ async function query(query, variables = {}) {
 }
 let group = (
   await query(
-    '{groups{id name token version archived members{id name} expenses{id title date note createdOrder}}}',
+    '{groups{id name token version members{id name} expenses{id title date note createdOrder}}}',
   )
-).groups.find((group) => group.name === 'Đà Lạt cuối tuần' && !group.archived);
+).groups.find((group) => group.name === 'Đà Lạt cuối tuần');
 if (!group) throw Error('Không tìm thấy nhóm demo Đà Lạt cuối tuần');
 const note = 'Dữ liệu mẫu ngày 01/11 để xem nhóm ngày';
 for (const [title, amount, payerName] of [

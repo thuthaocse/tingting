@@ -18,9 +18,3 @@ variable "google_oauth_enabled" {
   type        = bool
   default     = false
 }
-
-variable "open_group_creation" {
-  description = "Allow every signed-in user to create groups; set false to require an admin grant."
-  type        = bool
-  default     = true
-}

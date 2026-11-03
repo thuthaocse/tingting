@@ -45,50 +45,44 @@ pub fn matched_member(g: &Group, email: &str) -> Option<String> {
     }
 }
 fn add_group(out: &mut Dashboard, g: &Group, email: &str) {
-    let member_id = matched_member(g, email);
+    let Some(member_id) = matched_member(g, email) else {
+        return;
+    };
     let mut summary = GroupSummary {
         group_id: g.id.clone(),
-        member_id: member_id.clone(),
+        member_id: Some(member_id.clone()),
         payable: Money(0),
         receivable: Money(0),
     };
-    if let Some(id) = member_id {
-        for debt in domain::debts(g, true) {
-            let receive = debt.to_id == id;
-            if debt.from_id != id && !receive {
-                continue;
-            }
-            let person_id = if receive { debt.from_id } else { debt.to_id };
-            let item = AccountDebt {
-                group_id: g.id.clone(),
-                group_name: g.name.clone(),
-                token: g.token.clone(),
-                person_name: g
-                    .members
-                    .iter()
-                    .find(|m| m.id == person_id)
-                    .map(|m| m.name.clone())
-                    .unwrap_or_default(),
-                person_id,
-                amount: debt.amount,
-            };
-            if receive {
-                summary.receivable.0 += debt.amount.0;
-                if !g.archived {
-                    out.incoming.push(item);
-                }
-            } else {
-                summary.payable.0 += debt.amount.0;
-                if !g.archived {
-                    out.outgoing.push(item);
-                }
-            }
+    for debt in domain::debts(g, true) {
+        let receive = debt.to_id == member_id;
+        if debt.from_id != member_id && !receive {
+            continue;
+        }
+        let person_id = if receive { debt.from_id } else { debt.to_id };
+        let item = AccountDebt {
+            group_id: g.id.clone(),
+            group_name: g.name.clone(),
+            token: g.token.clone(),
+            person_name: g
+                .members
+                .iter()
+                .find(|m| m.id == person_id)
+                .map(|m| m.name.clone())
+                .unwrap_or_default(),
+            person_id,
+            amount: debt.amount,
+        };
+        if receive {
+            summary.receivable.0 += debt.amount.0;
+            out.incoming.push(item);
+        } else {
+            summary.payable.0 += debt.amount.0;
+            out.outgoing.push(item);
         }
     }
-    if !g.archived {
-        out.payable.0 += summary.payable.0;
-        out.receivable.0 += summary.receivable.0;
-    }
+    out.payable.0 += summary.payable.0;
+    out.receivable.0 += summary.receivable.0;
     out.groups.push(summary);
 }
 pub async fn load(pool: &Store, actor: &Actor) -> Result<Dashboard, String> {

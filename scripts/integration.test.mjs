@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 
 const url = process.env.API_URL || 'http://localhost:8080/graphql';
 const fields =
-  'id name token version archived members { id name email } expenses { id createdOrder title amount payerId date note shares { memberId amount } } settlements { id createdOrder fromId toId amount date note } directDebts { fromId toId amount } simplifiedDebts { fromId toId amount }';
+  'id name token version members { id name email } expenses { id createdOrder title amount payerId date note shares { memberId amount } } settlements { id createdOrder fromId toId amount date note } directDebts { fromId toId amount } simplifiedDebts { fromId toId amount }';
 let cookie = '';
 async function request(query, variables = {}, authenticated = true) {
   const response = await fetch(url, {
@@ -59,8 +59,9 @@ test('GraphQL workflow: permissions, conservation, partial repayment, conflicts,
   const createDenied = await request(
     'mutation($input:CreateGroupInput!){createGroup(input:$input){id}}',
     { input: { name: 'Denied', description: '', members: [{ id: randomUUID(), name: 'Member' }] } },
+    false,
   );
-  assert.match(createDenied.errors[0].message, /FORBIDDEN/);
+  assert.match(createDenied.errors[0].message, /UNAUTHORIZED/);
   cookie = process.env.TEST_ADMIN_COOKIE;
   const memberPrefix = randomUUID().slice(0, -1);
   const members = ['Linh Nguyễn', 'Minh Trần', 'An Phạm', 'Thảo Lê'].map((name, index) => ({
@@ -78,10 +79,10 @@ test('GraphQL workflow: permissions, conservation, partial repayment, conflicts,
     }),
     'createGroup',
   );
-  assert.match(group.token, /^[A-Za-z0-9_-]{16}$/, 'Group URLs use a short random code');
+  assert.match(group.token, /^[A-Za-z0-9]{8}$/, 'Group URLs use the eight-character group ID');
+  assert.equal(group.token, group.id);
   const originalToken = group.token;
-  try {
-    assert.equal(group.members.length, 4);
+  assert.equal(group.members.length, 4);
     const publicGroup = result(
       await request(`query($t:String!){group(token:$t){${fields}}}`, { t: group.token }, false),
       'group',
@@ -90,12 +91,6 @@ test('GraphQL workflow: permissions, conservation, partial repayment, conflicts,
       publicGroup.members.every((m) => m.email === null),
       'Public responses hide emails',
     );
-    const unauthorized = await request(
-      `mutation($t:String!,$v:Int!){archiveGroup(token:$t,version:$v){id}}`,
-      { t: group.token, v: group.version },
-      false,
-    );
-    assert.match(unauthorized.errors[0].message, /UNAUTHORIZED/);
     const input = {
       id: randomUUID(),
       title: 'Ăn tối',
@@ -271,10 +266,22 @@ test('GraphQL workflow: permissions, conservation, partial repayment, conflicts,
     );
     group = result(await command('deleteExpense', group, input.id), 'deleteExpense');
     assert.equal(group.simplifiedDebts.length, 0);
+    const activity = result(
+      await request(
+        'query($token:String!){activity(token:$token){id action summary actorName createdAt entityId}}',
+        { token: group.token },
+        false,
+      ),
+      'activity',
+    );
+    assert.ok(activity.some((event) => event.action === 'delete_expense'));
+    assert.ok(activity.some((event) => event.action === 'save_expense'));
+    assert.ok(!JSON.stringify(activity).includes('@example.com'));
     cookie = process.env.TEST_ADMIN_COOKIE;
     group = result(await command('rotateLink', group), 'rotateLink');
     assert.notEqual(group.token, originalToken);
-    assert.equal(group.token.length, 16);
+    assert.equal(group.token.length, 8);
+    assert.equal(group.token, group.id);
     assert.ok(
       (await request('query($t:String!){group(token:$t){id}}', { t: originalToken }, false)).errors,
     );
@@ -285,28 +292,9 @@ test('GraphQL workflow: permissions, conservation, partial repayment, conflicts,
     });
     assert.equal(forbiddenOrigin.status, 403);
     console.log('Verified workflow against the real Rust API and DynamoDB.');
-  } finally {
-    cookie = process.env.TEST_ADMIN_COOKIE;
-    group = result(await command('archiveGroup', group), 'archiveGroup');
-    const blocked = await command(
-      'saveExpense',
-      group,
-      {
-        id: randomUUID(),
-        title: 'Blocked',
-        amount: 1,
-        payerId: members[0].id,
-        date: '2026-11-02',
-        note: '',
-        participantIds: [members[0].id],
-      },
-      'ExpenseInput',
-    );
-    assert.match(blocked.errors[0].message, /lưu trữ/);
-  }
 });
 
-test('Admins delegate creation independently from administration and can revoke active sessions permissions', async () => {
+test('Signed-in accounts are creators by default and admins can revoke elevated access', async () => {
   const grantQuery =
     'mutation($email:String!,$role:String){setAccessGrant(email:$email,role:$role)}';
   const email = process.env.TEST_MEMBER_EMAIL;
@@ -317,9 +305,10 @@ test('Admins delegate creation independently from administration and can revoke 
     /FORBIDDEN/,
   );
   cookie = process.env.TEST_ADMIN_COOKIE;
-  result(
-    await request(grantQuery, { email: ' ' + email.toUpperCase() + ' ', role: 'creator' }),
-    'setAccessGrant',
+  const accountQuery = '{accessGrants{email role hasExplicitGrant}}';
+  assert.deepEqual(
+    result(await request(accountQuery), 'accessGrants').find((account) => account.email === email),
+    { email, role: 'creator', hasExplicitGrant: false },
   );
   let group;
   try {
@@ -336,13 +325,16 @@ test('Admins delegate creation independently from administration and can revoke 
       }),
       'createGroup',
     );
-    assert.match((await command('archiveGroup', group)).errors[0].message, /FORBIDDEN/);
+    assert.match((await command('rotateLink', group)).errors[0].message, /FORBIDDEN/);
     assert.match(
       (await request(grantQuery, { email, role: 'admin' })).errors[0].message,
       /FORBIDDEN/,
     );
     cookie = process.env.TEST_ADMIN_COOKIE;
-    result(await request(grantQuery, { email, role: 'admin' }), 'setAccessGrant');
+    result(
+      await request(grantQuery, { email: ' ' + email.toUpperCase() + ' ', role: 'admin' }),
+      'setAccessGrant',
+    );
     cookie = process.env.TEST_USER_COOKIE;
     me = result(await request('{me{isAdmin canCreateGroups}}'), 'me');
     assert.deepEqual(me, { isAdmin: true, canCreateGroups: true });
@@ -360,20 +352,17 @@ test('Admins delegate creation independently from administration and can revoke 
     cookie = process.env.TEST_USER_COOKIE;
     assert.deepEqual(result(await request('{me{isAdmin canCreateGroups}}'), 'me'), {
       isAdmin: false,
-      canCreateGroups: false,
+      canCreateGroups: true,
     });
-    assert.match(
-      (
-        await request(`mutation($input:CreateGroupInput!){createGroup(input:$input){id}}`, {
-          input: { name: 'Denied', description: '', members: [{ id: randomUUID(), name: 'User' }] },
-        })
-      ).errors[0].message,
-      /FORBIDDEN/,
+    assert.match((await command('rotateLink', group)).errors[0].message, /FORBIDDEN/);
+    cookie = process.env.TEST_ADMIN_COOKIE;
+    assert.deepEqual(
+      result(await request(accountQuery), 'accessGrants').find((account) => account.email === email),
+      { email, role: 'creator', hasExplicitGrant: false },
     );
   } finally {
     cookie = process.env.TEST_ADMIN_COOKIE;
     result(await request(grantQuery, { email, role: null }), 'setAccessGrant');
-    if (group) result(await command('archiveGroup', group), 'archiveGroup');
   }
 });
 
@@ -401,7 +390,6 @@ test('Account home keeps debts across groups separate and ignores guest viewing 
         }),
         'createGroup',
       );
-      fixtures.push(group);
       cookie = process.env.TEST_USER_COOKIE;
       group = result(
         await command(
@@ -427,8 +415,8 @@ test('Account home keeps debts across groups separate and ignores guest viewing 
     let summary = result(await request(query), 'dashboard');
     assert.equal(summary.payable, 200);
     assert.equal(summary.receivable, 400, 'Do not net the two groups to a single 200 receivable');
-    assert.equal(summary.outgoing[0].groupId, fixtures[0].id);
-    assert.equal(summary.incoming[0].groupId, fixtures[1].id);
+    assert.equal(summary.outgoing[0].personName, 'Bạn cùng nhóm');
+    assert.equal(summary.incoming[0].personName, 'Bạn cùng nhóm');
     const publicView = result(
       await request(
         'query($t:String!){group(token:$t){viewerMemberId members{id email}}}',
@@ -446,12 +434,6 @@ test('Account home keeps debts across groups separate and ignores guest viewing 
       'UpdateGroupInput',
     );
     assert.match(rename.errors[0].message, /FORBIDDEN/);
-    cookie = process.env.TEST_ADMIN_COOKIE;
-    fixtures[0] = result(await command('archiveGroup', fixtures[0]), 'archiveGroup');
-    cookie = process.env.TEST_USER_COOKIE;
-    summary = result(await request(query), 'dashboard');
-    assert.equal(summary.payable, 0);
-    assert.equal(summary.receivable, 400);
     const callback = await fetch(
       url.replace('/graphql', '/auth/google/callback?state=invalid&code=invalid'),
       { redirect: 'manual' },
@@ -467,7 +449,5 @@ test('Account home keeps debts across groups separate and ignores guest viewing 
     );
   } finally {
     cookie = process.env.TEST_ADMIN_COOKIE;
-    for (const group of fixtures)
-      if (!group.archived) result(await command('archiveGroup', group), 'archiveGroup');
   }
 });

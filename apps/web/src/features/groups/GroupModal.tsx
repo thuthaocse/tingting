@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { Badge, Button, Modal } from '@tingting/design-system';
 import { money } from '../../domain.mjs';
 import { name } from '../../shared/forms';
@@ -21,55 +22,85 @@ export default function GroupModal({ model }: { model: TingtingModel }) {
     createGroup,
     g,
   } = model;
+  const groupFormId = useId();
   if (!modal) return null;
   if (modal === 'create' && !model.canCreate) return null;
   if (modal === 'settings' && !model.admin) return null;
   if (['expense', 'settlement'].includes(modal) && !model.canEdit) return null;
+  const alert = error && (
+    <p className={s.error} role="alert">
+      {error}
+    </p>
+  );
+  if (modal === 'expense' && g) {
+    return (
+      <ExpenseForm
+        g={g}
+        value={expense}
+        identity={identity}
+        busy={busy}
+        alert={alert}
+        onClose={() => setModal(null)}
+        onSave={(input) => mutate('saveExpense', input)}
+      />
+    );
+  }
   return (
     <Modal
+      key={modal}
       title={
         {
           create: 'Tạo nhóm mới',
           settings: 'Cài đặt nhóm',
-          expense: expense ? 'Chỉnh sửa khoản chi' : 'Thêm khoản chi',
           detail: 'Chi tiết khoản chi',
           settlement: settlement?.id ? 'Chỉnh sửa thanh toán' : 'Thanh toán',
           'settlement-detail': 'Chi tiết thanh toán',
         }[modal || ''] || ''
       }
       onClose={() => setModal(null)}
+      footer={
+        modal === 'create' ? (
+          <Button type="submit" form={groupFormId} disabled={busy} className={s.createGroupButton}>
+            {busy ? 'Đang lưu…' : 'Tạo nhóm & lấy liên kết'}
+          </Button>
+        ) : modal === 'detail' && expense && model.canEdit && (
+          <div className={s.expenseActions}>
+            <Button onClick={() => setModal('expense')}>Chỉnh sửa</Button>
+            <Button
+              variant="danger"
+              disabled={busy}
+              onClick={() => {
+                if (confirm('Xóa khoản chi này? Số dư sẽ được tính lại.'))
+                  void mutate('deleteExpense', expense.id);
+              }}
+            >
+              Xóa khoản chi
+            </Button>
+          </div>
+        )
+      }
     >
-      {error && (
-        <p className={s.error} role="alert">
-          {error}
-        </p>
+      {alert}
+      {modal === 'create' && (
+        <GroupForm
+          formId={groupFormId}
+          viewer={model.viewer!}
+          teams={model.teams}
+          busy={busy}
+          onSave={createGroup}
+        />
       )}
-      {modal === 'create' && <GroupForm busy={busy} onSave={createGroup} />}
       {g && modal === 'settings' && (
         <Settings
           g={g}
+          teams={model.teams}
           busy={busy}
           onSave={(x) => mutate('updateGroup', x)}
           onRotate={() => {
             if (confirm('Đổi liên kết sẽ vô hiệu hóa liên kết cũ. Tiếp tục?'))
               void mutate('rotateLink');
           }}
-          onArchive={() => {
-            if (
-              confirm(g.archived ? 'Mở lại nhóm?' : 'Lưu trữ nhóm? Các khoản chi vẫn được giữ lại.')
-            )
-              void mutate('archiveGroup');
-          }}
           onCopy={() => copy(g.token)}
-        />
-      )}
-      {g && modal === 'expense' && (
-        <ExpenseForm
-          g={g}
-          value={expense}
-          identity={identity}
-          busy={busy}
-          onSave={(x) => mutate('saveExpense', x)}
         />
       )}
       {g && modal === 'detail' && expense && (
@@ -101,23 +132,6 @@ export default function GroupModal({ model }: { model: TingtingModel }) {
               </div>
             ))}
           </section>
-          {model.canEdit && (
-            <div className={s.actions}>
-              <Button disabled={g.archived} onClick={() => setModal('expense')}>
-                Chỉnh sửa
-              </Button>
-              <Button
-                variant="danger"
-                disabled={busy || g.archived}
-                onClick={() => {
-                  if (confirm('Xóa khoản chi này? Số dư sẽ được tính lại.'))
-                    void mutate('deleteExpense', expense.id);
-                }}
-              >
-                Xóa khoản chi
-              </Button>
-            </div>
-          )}
         </div>
       )}
       {g && modal === 'settlement' && (
@@ -148,12 +162,12 @@ export default function GroupModal({ model }: { model: TingtingModel }) {
           <p>{settlement.note}</p>
           {model.canEdit && (
             <div className={s.actions}>
-              <Button disabled={g.archived} onClick={() => setModal('settlement')}>
+              <Button onClick={() => setModal('settlement')}>
                 Chỉnh sửa
               </Button>
               <Button
                 variant="danger"
-                disabled={busy || g.archived}
+                disabled={busy}
                 onClick={() => {
                   if (confirm('Xóa bản ghi thanh toán này?'))
                     void mutate('deleteSettlement', settlement.id);

@@ -1,4 +1,4 @@
-# Tingting design system
+# TingTing design system
 
 Preview: /design-system (no API required).
 

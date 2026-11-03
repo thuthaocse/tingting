@@ -1,6 +1,6 @@
-import { SearchSelect } from '@tingting/design-system';
 import type { FormEvent, ReactNode } from 'react';
 import type { Group } from '../types';
+import MemberPicker from './MemberPicker';
 import s from './forms.module.css';
 export const name = (g: Group, id: string) =>
   g.members.find((m) => m.id === id)?.name || 'Thành viên';
@@ -10,13 +10,15 @@ export function Form({
   onSubmit,
   children,
   className = '',
+  id,
 }: {
   onSubmit: (e: FormEvent<HTMLFormElement>) => void;
   children: ReactNode;
   className?: string;
+  id?: string;
 }) {
   return (
-    <form className={`${s.form} ${className}`} onSubmit={onSubmit}>
+    <form id={id} className={`${s.form} ${className}`} onSubmit={onSubmit}>
       {children}
     </form>
   );
@@ -35,15 +37,13 @@ export function MemberSelect({
   label?: string;
 }) {
   return (
-    <SearchSelect
+    <MemberPicker
       options={g.members
         .filter((member) => member.id !== exclude)
         .map((member) => ({ id: member.id, label: member.name }))}
       value={value}
       onChange={onChange}
       label={label}
-      placeholder="Chọn thành viên"
-      searchPlaceholder="Tìm theo tên…"
     />
   );
 }

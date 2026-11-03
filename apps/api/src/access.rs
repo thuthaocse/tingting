@@ -1,27 +1,39 @@
 use crate::auth::{self, Actor};
 use crate::store::Store;
 use async_graphql::SimpleObject;
+use std::collections::BTreeMap;
 use uuid::Uuid;
 #[derive(SimpleObject)]
 pub struct AccessGrant {
     pub email: String,
     pub role: String,
+    pub has_explicit_grant: bool,
 }
 pub async fn list(pool: &Store, actor: &Actor) -> Result<Vec<AccessGrant>, String> {
     auth::admin(actor)?;
-    let mut grants: Vec<_> = pool
-        .list::<Grant>("ROLE")
-        .await?
+    let (accounts, grants) =
+        tokio::try_join!(pool.list::<auth::User>("USER"), pool.list::<Grant>("ROLE"))?;
+    let mut roles = BTreeMap::new();
+    for account in accounts {
+        let email = account.value.email;
+        if email != auth::ADMIN_EMAIL {
+            roles.insert(email, ("creator".to_owned(), false));
+        }
+    }
+    for grant in grants {
+        let Grant { email, role } = grant.value;
+        if let Some(role) = role {
+            roles.insert(email, (role, true));
+        }
+    }
+    Ok(roles
         .into_iter()
-        .filter_map(|record| {
-            record.value.role.map(|role| AccessGrant {
-                email: record.value.email,
-                role,
-            })
+        .map(|(email, (role, has_explicit_grant))| AccessGrant {
+            email,
+            role,
+            has_explicit_grant,
         })
-        .collect();
-    grants.sort_by(|a, b| a.email.cmp(&b.email));
-    Ok(grants)
+        .collect())
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Grant {

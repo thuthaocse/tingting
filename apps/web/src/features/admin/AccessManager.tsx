@@ -12,7 +12,7 @@ export default function AccessManager({ onChange }: { onChange: () => Promise<vo
       <h1>Tài khoản và vai trò</h1>
       <div className={s.panel}>
         <div className={s.body}>
-          <p>Thêm email để cấp quyền. Người được thêm đăng nhập Google bằng email này.</p>
+          <p>Tài khoản đã đăng nhập tự có quyền tạo nhóm. Thêm email để cấp vai trò trước khi tài khoản đăng nhập.</p>
           {access.error && (
             <p role="alert" className={s.error}>
               {access.error}
@@ -57,14 +57,16 @@ export default function AccessManager({ onChange }: { onChange: () => Promise<vo
                 value={grant.role}
                 onChange={(role) => void access.save(grant.email, role)}
               />
-              <Button
-                variant="quiet"
-                small
-                disabled={access.busy}
-                onClick={() => void access.save(grant.email, null)}
-              >
-                Thu hồi
-              </Button>
+              {grant.hasExplicitGrant && (
+                <Button
+                  variant="quiet"
+                  small
+                  disabled={access.busy}
+                  onClick={() => void access.save(grant.email, null)}
+                >
+                  Thu hồi
+                </Button>
+              )}
             </div>
           ))}
         </div>

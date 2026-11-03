@@ -33,7 +33,6 @@ test('Vite renders shared design-system components and initial screens without a
       name: 'Đà Lạt',
       token: 'short-link',
       version: 1,
-      archived: false,
       description: '',
       viewerMemberId: null,
       members: [

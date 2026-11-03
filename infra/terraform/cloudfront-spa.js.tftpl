@@ -14,7 +14,7 @@ function handler(event) {
       headers: { location: { value: 'https://' + domain + request.uri + (query.length ? '?' + query.join('&') : '') } }
     };
   }
-  if (request.uri === '/' || request.uri === '/design-system' || request.uri === '/admin/access' || request.uri.indexOf('/g/') === 0) {
+  if (request.uri === '/' || request.uri === '/teams' || request.uri === '/design-system' || request.uri === '/admin/access' || request.uri.indexOf('/g/') === 0) {
     request.uri = '/index.html';
   }
   return request;

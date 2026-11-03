@@ -27,15 +27,6 @@ pub fn digest(s: &str) -> String {
 pub fn token() -> String {
     format!("{}{}", Uuid::new_v4().simple(), Uuid::new_v4().simple())
 }
-pub fn group_token() -> String {
-    const ALPHABET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-    let mut bytes = [0u8; 16];
-    OsRng.fill_bytes(&mut bytes);
-    bytes
-        .iter()
-        .map(|byte| ALPHABET[(byte & 63) as usize] as char)
-        .collect()
-}
 pub fn group_id() -> String {
     const ALPHABET: &[u8; 62] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let mut bytes = [0u8; 8];
@@ -69,13 +60,10 @@ pub fn cookie_value<'a>(cookies: Option<&'a str>, name: &str) -> Option<&'a str>
         (key == name).then_some(value)
     })
 }
-pub async fn actor(pool: &Store, cookies: Option<&str>, open_group_creation: bool) -> Actor {
+pub async fn actor(pool: &Store, cookies: Option<&str>) -> Actor {
     let session = cookie_value(cookies, "lilac_session").map(str::to_owned);
     let viewer = match &session {
-        Some(token) => load_viewer(pool, token, open_group_creation)
-            .await
-            .ok()
-            .flatten(),
+        Some(token) => load_viewer(pool, token).await.ok().flatten(),
         None => None,
     };
     Actor { session, viewer }
@@ -88,26 +76,16 @@ pub fn cookie(token: &str, secure: bool, logout: bool) -> String {
         if secure { "; Secure" } else { "" }
     )
 }
-pub fn creator(actor: &Actor) -> Result<Uuid, String> {
-    let id = signed_in(actor)?;
-    if !actor.viewer.as_ref().is_some_and(|u| u.can_create_groups) {
-        return Err("FORBIDDEN: Bạn chưa có quyền tạo nhóm".into());
-    }
-    Ok(id)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
-    fn group_links_are_short_random_and_url_safe() {
-        let links: std::collections::HashSet<_> = (0..1000).map(|_| group_token()).collect();
-        assert_eq!(links.len(), 1000);
-        for link in links {
-            assert_eq!(link.len(), 16);
-            assert!(link
-                .bytes()
-                .all(|c| c.is_ascii_alphanumeric() || c == b'-' || c == b'_'));
+    fn group_ids_are_eight_random_alphanumeric_characters() {
+        let ids: std::collections::HashSet<_> = (0..1000).map(|_| group_id()).collect();
+        assert_eq!(ids.len(), 1000);
+        for id in ids {
+            assert_eq!(id.len(), 8);
+            assert!(id.bytes().all(|byte| byte.is_ascii_alphanumeric()));
         }
     }
 }
@@ -139,11 +117,7 @@ pub async fn revoke(store: &Store, hash: &str) -> Result<(), String> {
     }
     Ok(())
 }
-async fn load_viewer(
-    store: &Store,
-    token: &str,
-    open_group_creation: bool,
-) -> Result<Option<Viewer>, String> {
+async fn load_viewer(store: &Store, token: &str) -> Result<Option<Viewer>, String> {
     let Some(session) = store.read::<Session>("SESSION", &digest(token)).await? else {
         return Ok(None);
     };
@@ -163,6 +137,6 @@ async fn load_viewer(
         email: user.value.email,
         name: user.value.name,
         is_admin,
-        can_create_groups: open_group_creation || is_admin || role == Some("creator"),
+        can_create_groups: true,
     }))
 }

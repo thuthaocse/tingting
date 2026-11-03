@@ -1,5 +1,8 @@
 .topbar {
-  min-height: 82px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: var(--app-header-height);
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   display: flex;
@@ -14,6 +17,17 @@
   justify-content: flex-end;
   min-width: 0;
   gap: var(--space-3);
+}
+.teamsLink {
+  padding: 7px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-size: var(--font-small);
+  font-weight: 600;
+}
+.mobileTeamsLink {
+  display: none;
 }
 .logoutLabel {
   display: none;
@@ -56,12 +70,22 @@
 }
 @media (max-width: 640px) {
   .topbar {
-    min-height: 66px;
     padding: var(--space-3) var(--space-4);
     gap: var(--space-3);
   }
   .desktopActions {
     display: none;
+  }
+  .mobileTeamsLink {
+    display: inline-flex;
+    align-items: center;
+    margin-left: auto;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    font-size: var(--font-small);
+    font-weight: 600;
   }
   .mobileMenu {
     display: block;
@@ -105,11 +129,21 @@
     justify-content: flex-start;
     flex-wrap: wrap;
   }
+  .menuPanel .teamsLink {
+    display: none;
+  }
   .menuPanel .iconButton {
-    width: auto;
+    justify-content: flex-start;
+    gap: var(--space-2);
+    width: 100%;
     min-width: 0;
-    height: 40px;
-    padding-inline: var(--space-3);
+    height: 44px;
+    padding-inline: 0;
+  }
+  .menuPanel .iconButton svg {
+    width: 18px;
+    box-sizing: content-box;
+    padding-inline: var(--space-2);
   }
   .menuPanel .account {
     flex-basis: 100%;

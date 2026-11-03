@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
+import type { AccessGrant } from '../../../graphql/generated';
 import { api } from '../../../api';
 import { err } from '../../../shared/forms';
 export function useAccessManager(onChange: () => Promise<void>) {
   const [open, setOpen] = useState(true),
-    [grants, setGrants] = useState<{ email: string; role: string }[]>([]),
+    [grants, setGrants] = useState<AccessGrant[]>([]),
     [email, setEmail] = useState(''),
     [role, setRole] = useState('creator'),
     [busy, setBusy] = useState(false),

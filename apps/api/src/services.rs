@@ -63,7 +63,6 @@ pub async fn start(
     pool: &Store,
     token: &str,
     version: i32,
-    allow_archived: bool,
 ) -> Result<(Transaction, Group), String> {
     let record = repo::resolve(pool, token).await?;
     let g = record.value.group.clone();
@@ -76,9 +75,6 @@ pub async fn start(
         return Err(
             "CONFLICT: Dữ liệu đã thay đổi. Đã tải lại bản mới; hãy kiểm tra và lưu lại.".into(),
         );
-    }
-    if g.archived && !allow_archived {
-        return Err("Nhóm đã được lưu trữ".into());
     }
     Ok((tx, g))
 }
@@ -93,9 +89,34 @@ pub async fn finish(
     after = repo::ordered(after);
     after.version = after.version.checked_add(1).ok_or("Version exhausted")?;
     let event_id = Uuid::new_v4().to_string();
-    let audit = serde_json::json!({"id":event_id,"group_id":after.id,"action":action,"entity_id":entity,"before_state":before,"after_state":after,"actor_user_id":actor.viewer.as_ref().map(|v|&v.id),"created_at":chrono::Utc::now().to_rfc3339()});
+    let audit_group_id = tx
+        .stored
+        .id_history
+        .first()
+        .cloned()
+        .unwrap_or_else(|| before.id.clone());
+    let audit = serde_json::json!({"id":event_id,"group_id":audit_group_id,"action":action,"entity_id":entity,"before_state":before,"after_state":after,"actor_user_id":actor.viewer.as_ref().map(|v|&v.id),"created_at":chrono::Utc::now().to_rfc3339()});
     let mut writes = vec![tx.store.prepare("AUDIT", &event_id, &audit, None).await?];
-    if before.token != after.token || tx.revision.is_none() {
+    let moved = before.id != after.id;
+    let old_links: BTreeSet<_> = if moved {
+        std::iter::once(before.token.clone())
+            .chain(std::iter::once(before.id.clone()))
+            .chain(tx.stored.aliases.iter().cloned())
+            .collect()
+    } else {
+        BTreeSet::new()
+    };
+    if moved {
+        if !tx.stored.id_history.contains(&before.id) {
+            tx.stored.id_history.push(before.id.clone());
+        }
+        let old_revision = tx.revision.as_deref().ok_or("Missing group revision")?;
+        writes.push(tx.store.prepare_delete("GROUP", &before.id, old_revision)?);
+    }
+    if before.token != after.token || tx.revision.is_none() || moved {
+        if moved {
+            tx.stored.aliases.clear();
+        }
         writes.push(
             tx.store
                 .prepare(
@@ -108,23 +129,38 @@ pub async fn finish(
         );
     }
     tx.stored.group = after.clone();
-    writes.push(
-        tx.store
-            .prepare("GROUP", &after.id, &tx.stored, tx.revision.as_deref())
-            .await?,
-    );
+    if moved {
+        writes.push(
+            tx.store
+                .prepare("GROUP", &after.id, &tx.stored, None)
+                .await?,
+        );
+    } else {
+        writes.push(
+            tx.store
+                .prepare("GROUP", &after.id, &tx.stored, tx.revision.as_deref())
+                .await?,
+        );
+    }
+    if moved {
+        for token in old_links {
+            if let Some(link) = tx.store.read::<serde_json::Value>("LINK", &token).await? {
+                writes.push(tx.store.prepare_delete("LINK", &token, &link.revision)?);
+            }
+        }
+    }
     tx.store.commit(writes).await?;
     Ok(public_group(after, auth::is_admin(actor)))
 }
 pub async fn create(pool: &Store, input: CreateGroupInput, actor: &Actor) -> Result<Group, String> {
-    auth::creator(actor)?;
+    auth::signed_in(actor)?;
+    let id = auth::group_id();
     let g = Group {
-        id: auth::group_id(),
+        id: id.clone(),
         name: text(&input.name, 120, true)?,
         description: text(&input.description, 500, false)?,
-        token: auth::group_token(),
+        token: id,
         version: 0,
-        archived: false,
         members: members(input.members)?,
         expenses: vec![],
         settlements: vec![],
@@ -134,6 +170,7 @@ pub async fn create(pool: &Store, input: CreateGroupInput, actor: &Actor) -> Res
         stored: StoredGroup {
             group: g.clone(),
             aliases: vec![],
+            id_history: vec![g.id.clone()],
             created_at: chrono::Utc::now().timestamp_micros(),
             next_order: 0,
         },
@@ -151,7 +188,7 @@ pub async fn save_expense(
     auth::signed_in(actor)?;
     repo::id(&input.id)?;
     validate_date(&input.date)?;
-    let (mut tx, before) = start(pool, token, version, false).await?;
+    let (mut tx, before) = start(pool, token, version).await?;
     let mut g = before.clone();
     member(&g, &input.payer_id)?;
     for id in &input.participant_ids {
@@ -192,7 +229,7 @@ pub async fn save_settlement(
     if input.amount.0 <= 0 || input.amount.0 > 1_000_000_000_000 || input.from_id == input.to_id {
         return Err("Số tiền hoặc người nhận không hợp lệ".into());
     }
-    let (mut tx, before) = start(pool, token, version, false).await?;
+    let (mut tx, before) = start(pool, token, version).await?;
     let mut g = before.clone();
     member(&g, &input.from_id)?;
     member(&g, &input.to_id)?;
@@ -229,7 +266,7 @@ pub async fn delete(
     actor: &Actor,
 ) -> Result<Group, String> {
     auth::signed_in(actor)?;
-    let (tx, before) = start(pool, token, version, false).await?;
+    let (tx, before) = start(pool, token, version).await?;
     let mut g = before.clone();
     let found = if expense {
         let n = g.expenses.len();
@@ -265,7 +302,7 @@ pub async fn update(
     actor: &Actor,
 ) -> Result<Group, String> {
     auth::admin(actor)?;
-    let (tx, before) = start(pool, token, version, true).await?;
+    let (tx, before) = start(pool, token, version).await?;
     let mut g = before.clone();
     let next = members(input.members)?;
     let used: BTreeSet<_> = g
@@ -290,33 +327,17 @@ pub async fn update(
     g.members = next;
     finish(tx, &before, g, "update_group", None, actor).await
 }
-pub async fn admin_action(
+pub async fn rotate_link(
     pool: &Store,
     token: &str,
     version: i32,
-    rotate: bool,
     actor: &Actor,
 ) -> Result<Group, String> {
     auth::admin(actor)?;
-    let (mut tx, before) = start(pool, token, version, true).await?;
+    let (tx, before) = start(pool, token, version).await?;
     let mut g = before.clone();
-    if rotate {
-        tx.stored.aliases.clear();
-        g.token = auth::group_token()
-    } else {
-        g.archived = !g.archived
-    }
-    finish(
-        tx,
-        &before,
-        g,
-        if rotate {
-            "rotate_link"
-        } else {
-            "archive_group"
-        },
-        None,
-        actor,
-    )
-    .await
+    let id = auth::group_id();
+    g.id = id.clone();
+    g.token = id;
+    finish(tx, &before, g, "rotate_link", None, actor).await
 }

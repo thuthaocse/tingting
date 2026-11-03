@@ -14,7 +14,13 @@ export default function Activity({
   openExpense: (e: Expense) => void;
   openSettlement: (s: Settlement) => void;
 }) {
-  const entries = activityEntries(g);
+  const entries = activityEntries(g) as Array<{
+    id: string;
+    date: string;
+    createdAt?: string;
+    expense?: Expense;
+    settlement?: Settlement;
+  }>;
   return (
     <>
       {entries.map((row, i) => {
@@ -35,54 +41,54 @@ export default function Activity({
                 })}
               </p>
             )}
-            <button
-              className={s.activityRow}
-              onClick={() =>
-                expense ? openExpense(expense) : settlement && openSettlement(settlement)
-              }
-            >
-              <span className={`${s.activityIcon} ${settlement ? s.paymentIcon : ''}`}>
-                {expense ? '▤' : '↗'}
-              </span>
-              <div className={s.activityInfo}>
-                <strong>
-                  {expense
-                    ? expense.title
-                    : `${name(g, settlement!.fromId)} đã trả ${name(g, settlement!.toId)}`}
-                </strong>
-                <p>
-                  {expense
-                    ? `${name(g, expense.payerId)} đã trả ${money(expense.amount)}`
-                    : settlement?.note || 'Thanh toán nợ'}
-                </p>
-              </div>
-              <div className={`${s.activityAmount} ${receivable ? s.receive : share ? s.pay : ''}`}>
-                {expense ? (
-                  <>
-                    {!identity ? (
-                      <>
-                        <span>Tổng khoản chi</span>
-                        <strong>{money(expense.amount)}</strong>
-                      </>
-                    ) : receivable ? (
-                      <>
-                        <span>Bạn được nhận</span>
-                        <strong>{money(receivable)}</strong>
-                      </>
-                    ) : share ? (
-                      <>
-                        <span>Phần của bạn</span>
-                        <strong>{money(share)}</strong>
-                      </>
-                    ) : (
-                      <span>Không tham gia</span>
-                    )}
-                  </>
-                ) : (
-                  <strong>{money(settlement!.amount)}</strong>
-                )}
-              </div>
-            </button>
+              <button
+                className={s.activityRow}
+                onClick={() =>
+                  expense ? openExpense(expense) : settlement && openSettlement(settlement)
+                }
+              >
+                <span className={`${s.activityIcon} ${settlement ? s.paymentIcon : ''}`}>
+                  {expense ? '▤' : '↗'}
+                </span>
+                <div className={s.activityInfo}>
+                  <strong>
+                    {expense
+                      ? expense.title
+                      : `${name(g, settlement!.fromId)} đã trả ${name(g, settlement!.toId)}`}
+                  </strong>
+                  <p>
+                    {expense
+                      ? `${name(g, expense.payerId)} đã trả ${money(expense.amount)}`
+                      : settlement?.note || 'Thanh toán nợ'}
+                  </p>
+                </div>
+                <div className={`${s.activityAmount} ${receivable ? s.receive : share ? s.pay : ''}`}>
+                  {expense ? (
+                    <>
+                      {!identity ? (
+                        <>
+                          <span>Tổng khoản chi</span>
+                          <strong>{money(expense.amount)}</strong>
+                        </>
+                      ) : receivable ? (
+                        <>
+                          <span>Bạn được nhận</span>
+                          <strong>{money(receivable)}</strong>
+                        </>
+                      ) : share ? (
+                        <>
+                          <span>Phần của bạn</span>
+                          <strong>{money(share)}</strong>
+                        </>
+                      ) : (
+                        <span>Không tham gia</span>
+                      )}
+                    </>
+                  ) : (
+                    <strong>{money(settlement!.amount)}</strong>
+                  )}
+                </div>
+              </button>
           </div>
         );
       })}

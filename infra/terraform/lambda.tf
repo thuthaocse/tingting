@@ -67,11 +67,10 @@ resource "aws_lambda_function" "api" {
   memory_size      = 512
   environment {
     variables = {
-      DYNAMODB_TABLE      = aws_dynamodb_table.application.name
-      WEB_ORIGIN          = coalesce(var.web_origin, local.public_origin)
-      COOKIE_SECURE       = "true"
-      OPEN_GROUP_CREATION = tostring(var.open_group_creation)
-      GOOGLE_SECRET_ARN   = var.google_oauth_enabled ? aws_secretsmanager_secret.google.arn : ""
+      DYNAMODB_TABLE    = aws_dynamodb_table.application.name
+      WEB_ORIGIN        = coalesce(var.web_origin, local.public_origin)
+      COOKIE_SECURE     = "true"
+      GOOGLE_SECRET_ARN = var.google_oauth_enabled ? aws_secretsmanager_secret.google.arn : ""
     }
   }
   lifecycle {

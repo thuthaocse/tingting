@@ -1,4 +1,5 @@
 mod access;
+mod activity;
 mod auth;
 mod dashboard;
 mod domain;
@@ -8,6 +9,7 @@ mod migration;
 mod repository;
 mod services;
 mod store;
+mod teams;
 use axum::{
     extract::State,
     http::{HeaderMap, StatusCode},
@@ -24,7 +26,6 @@ struct AppState {
     origin: String,
     secure_cookie: bool,
     google: Option<google::GoogleConfig>,
-    open_group_creation: bool,
 }
 async fn endpoint(
     State(state): State<AppState>,
@@ -44,7 +45,6 @@ async fn endpoint(
     let actor = auth::actor(
         &state.pool,
         headers.get("cookie").and_then(|v| v.to_str().ok()),
-        state.open_group_creation,
     )
     .await;
     let response = state.schema.execute(req.data(actor)).await;
@@ -94,21 +94,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .to_owned();
     let google = google::GoogleConfig::from_env(&origin);
     let secure_cookie = std::env::var("COOKIE_SECURE").as_deref() == Ok("true");
-    let open_group_creation = std::env::var("OPEN_GROUP_CREATION")
-        .map(|value| value != "false")
-        .unwrap_or(true);
     let schema = graphql::schema(pool.clone(), secure_cookie, google.is_some());
     if std::env::args().any(|x| x == "--schema") {
         println!("{}", schema.sdl());
         return Ok(());
     }
+    migration::unify_group_codes(&pool)
+        .await
+        .map_err(std::io::Error::other)?;
     let state = AppState {
         schema,
         pool,
         origin,
         secure_cookie,
         google,
-        open_group_creation,
     };
     let app = Router::new()
         .route("/graphql", post(endpoint))
@@ -130,7 +129,7 @@ async fn serve(app: Router) -> Result<(), Box<dyn std::error::Error + Send + Syn
 #[cfg(not(feature = "lambda"))]
 async fn serve(app: Router) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await?;
-    tracing::info!("Tingting API listening on :8080");
+    tracing::info!("TingTing API listening on :8080");
     axum::serve(listener, app)
         .with_graceful_shutdown(async {
             let _ = tokio::signal::ctrl_c().await;

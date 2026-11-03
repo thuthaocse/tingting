@@ -73,7 +73,6 @@ pub struct Group {
     pub description: String,
     pub token: String,
     pub version: i32,
-    pub archived: bool,
     pub members: Vec<Member>,
     pub expenses: Vec<Expense>,
     pub settlements: Vec<Settlement>,
@@ -264,7 +263,6 @@ mod tests {
             description: "".into(),
             token: "t".into(),
             version: 1,
-            archived: false,
             members: ["a", "b", "c"]
                 .iter()
                 .map(|id| Member {

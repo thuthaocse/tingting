@@ -8,6 +8,7 @@ import GroupModal from './features/groups/GroupModal';
 import DesignPreview from './features/design-preview/DesignPreview';
 import AppHeader from './app/components/AppHeader';
 import AccessManager from './features/admin/AccessManager';
+import TeamsScreen from './features/teams/TeamsScreen';
 import s from './App.module.css';
 export default function App() {
   const model = useTingting();
@@ -35,6 +36,8 @@ function CurrentScreen({ model }: { model: TingtingModel }) {
     ) : (
       <LoginScreen model={model} />
     );
+  if (model.path === '/teams')
+    return model.viewer ? <TeamsScreen model={model} /> : <LoginScreen model={model} />;
   if (!model.token)
     return model.viewer ? <DashboardScreen model={model} /> : <LoginScreen model={model} />;
   if (!model.g)

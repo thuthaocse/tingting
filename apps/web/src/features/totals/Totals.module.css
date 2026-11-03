@@ -78,26 +78,12 @@
 
 .contentHeader {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 210px);
   align-items: center;
   margin-bottom: 0;
 }
 .contentHeader h2 {
   white-space: nowrap;
-}
-.monthFilter {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-.monthFilter input {
-  width: 180px;
-  min-width: 0;
-  font-size: 0.8125rem;
-}
-.monthFilter button {
-  flex-shrink: 0;
 }
 .tableWrap {
   max-width: 100%;
@@ -110,27 +96,11 @@
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  .monthFilter {
-    width: 100%;
-  }
-  .monthFilter input {
-    width: 100%;
-    flex: 1;
-  }
   .stat {
     padding: 16px;
   }
   .stat strong {
     font-size: 1.5rem;
-  }
-}
-
-.monthFilter {
-  width: 210px;
-}
-@media (max-width: 480px) {
-  .monthFilter {
-    width: 100%;
   }
 }
 

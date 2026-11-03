@@ -15,8 +15,8 @@ async function query(query, variables = {}) {
   if (body.errors) throw Error(body.errors[0].message);
   return body.data;
 }
-const existing = (await query('{groups{id name token archived}}')).groups.find(
-  (g) => g.name === 'Đà Lạt cuối tuần' && !g.archived,
+const existing = (await query('{groups{id name token}}')).groups.find(
+  (g) => g.name === 'Đà Lạt cuối tuần',
 );
 if (existing) {
   console.log('Nhóm demo: http://localhost:3000/g/' + existing.token);

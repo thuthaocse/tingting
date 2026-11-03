@@ -36,6 +36,14 @@
 .groupHeading h1 {
   font-size: 1.6rem;
 }
+.loginNotice {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-soft);
+  color: var(--color-action);
+  font-size: var(--font-small);
+}
 .identity {
   display: flex;
   align-items: center;
@@ -47,10 +55,19 @@
   min-width: 170px;
 }
 .content {
+  --content-inset: var(--space-4);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 14px;
-  overflow: hidden;
+}
+.stickyTabs {
+  position: sticky;
+  top: var(--app-header-height);
+  z-index: 2;
+  margin-inline: calc(-1 * var(--content-inset));
+  padding-inline: var(--content-inset);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  background: var(--color-surface);
 }
 .contentInner {
   padding: 20px;
@@ -108,7 +125,7 @@
   position: fixed;
   right: max(24px, calc((100vw - 960px) / 2 + 24px));
   bottom: 28px;
-  border: 0;
+  border: 1px solid var(--color-border);
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -127,7 +144,10 @@
   margin-bottom: 18px;
 }
 .empty {
-  padding: 44px 16px;
+  margin-top: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   text-align: center;
   color: var(--color-muted);
 }
@@ -264,12 +284,15 @@
 }
 @media (max-width: 640px) {
   .identity {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
     padding: 0;
     border: 0;
     background: none;
   }
   .identity > div {
-    width: min(240px, 68%);
+    width: 100%;
     max-width: none;
     min-width: 0;
   }
@@ -305,11 +328,11 @@
   margin-bottom: var(--space-3);
 }
 .contentInner {
-  padding: 0 var(--space-4) var(--space-3);
+  padding: 0 var(--content-inset) var(--space-2);
 }
 .tabPanel {
   padding-top: var(--space-3);
-  padding-bottom: var(--space-4);
+  padding-bottom: 0;
 }
 .page {
   padding-bottom: var(--space-6);
@@ -321,11 +344,12 @@
   .page {
     padding-bottom: var(--space-6);
   }
-  .contentInner {
-    padding: 0 var(--space-3);
+  .content {
+    --content-inset: var(--space-3);
   }
   .contentHeader {
-    align-items: center;
+    align-items: flex-start;
+    flex-direction: column;
   }
   .contentHeader h2 {
     flex: 1 1 auto;
@@ -340,4 +364,7 @@
 
 .withComposer {
   padding-bottom: calc(var(--space-7) + var(--space-6) + var(--space-4));
+}
+.contentInner.contentInnerBottomSpace {
+  padding-bottom: var(--space-4);
 }

@@ -26,7 +26,7 @@ export default function DesignPreview() {
       </header>
       <main className={`${s.page} ${s.preview}`}>
         <div>
-          <p className={s.eyebrow}>TINGTING DESIGN SYSTEM</p>
+          <p className={s.eyebrow}>TingTing DESIGN SYSTEM</p>
           <h1>Nhẹ nhàng. Rõ ràng. Cùng nhau.</h1>
           <p className={s.muted}>React · CSS Modules · Mobile first · Tiếng Việt</p>
         </div>
