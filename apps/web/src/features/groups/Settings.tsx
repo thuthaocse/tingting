@@ -8,30 +8,23 @@ export default function Settings({
   teams = [],
   busy,
   onSave,
-  onRotate,
   onCopy,
+  formId,
 }: {
   g: Group;
   teams?: Team[];
   busy: boolean;
   onSave: (x: unknown) => void;
-  onRotate: () => void;
   onCopy: () => void;
+  formId: string;
 }) {
   return (
     <div className={s.form}>
       <Button variant="secondary" small className={s.copyLink} onClick={onCopy}>
         <CopyIcon />
-        Sao chép liên kết nhóm
+        Sao chép liên kết sổ
       </Button>
-      {
-        <>
-          <GroupForm value={g} teams={teams} busy={busy} onSave={onSave} />
-          <Button variant="secondary" disabled={busy} onClick={onRotate}>
-            Đổi liên kết chia sẻ
-          </Button>
-        </>
-      }
+      <GroupForm formId={formId} value={g} teams={teams} busy={busy} onSave={onSave} />
     </div>
   );
 }

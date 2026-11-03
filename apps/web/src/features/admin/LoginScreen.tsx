@@ -11,7 +11,7 @@ export default function LoginScreen({ model }: { model: TingtingModel }) {
         <Badge>CHIA SẺ CHI TIÊU</Badge>
         <h1>Nhẹ tiền, nhẹ lòng.</h1>
         <p className={s.muted}>
-          Đăng nhập để xem các nhóm, theo dõi khoản nợ và ghi lại chi tiêu cùng nhau.
+          Đăng nhập để xem các sổ chi tiêu, theo dõi khoản nợ và ghi lại chi tiêu cùng nhau.
         </p>
         {model.error && (
           <p role="alert" className={s.error}>
@@ -22,7 +22,7 @@ export default function LoginScreen({ model }: { model: TingtingModel }) {
           Đăng nhập bằng Google
         </Button>
         {!model.googleEnabled && <p className={s.muted}>Đang chờ cấu hình đăng nhập Google.</p>}
-        <p className={s.footer}>Đã có liên kết nhóm? Bạn vẫn có thể mở để xem.</p>
+        <p className={s.footer}>Đã có liên kết sổ? Bạn vẫn có thể mở để xem.</p>
       </div>
     </main>
   );

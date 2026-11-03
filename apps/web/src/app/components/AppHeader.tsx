@@ -6,19 +6,25 @@ export default function AppHeader({ model }: { model: TingtingModel }) {
   const { menuRef, close } = useHeaderMenu();
   return (
     <header className={s.topbar}>
-      <Logo />
+      <div className={s.brandNavigation}>
+        <Logo />
+        {model.viewer && <div className={s.desktopNavigation}><Navigation model={model} /></div>}
+      </div>
       {model.viewer ? (
         <>
           <div className={s.desktopActions}>
-            <HeaderActions model={model} />
+            <div className={s.actions}><Account model={model} /><Logout model={model} /></div>
           </div>
-          <TeamsLink model={model} className={s.mobileTeamsLink} />
           <details ref={menuRef} className={s.mobileMenu}>
-            <summary aria-label="Menu tài khoản" title="Menu tài khoản">
+            <summary aria-label="Menu" title="Menu">
               <MenuIcon />
             </summary>
             <div className={s.menuPanel} onClick={close}>
-              <HeaderActions model={model} />
+              <div className={s.actions}>
+                <Account model={model} />
+                <Navigation model={model} />
+                <Logout model={model} />
+              </div>
             </div>
           </details>
         </>
@@ -30,47 +36,28 @@ export default function AppHeader({ model }: { model: TingtingModel }) {
     </header>
   );
 }
-function HeaderActions({ model }: { model: TingtingModel }) {
+function Navigation({ model }: { model: TingtingModel }) {
   return (
-    <div className={s.actions}>
-      {model.viewer && (
-        <>
-          <TeamsLink model={model} className={s.teamsLink} />
-          <div className={s.account}>
-            <Avatar name={model.viewer.name} />
-            <span className={s.accountName} title={model.viewer.name}>
-              {model.viewer.name}
-            </span>
-          </div>
-          <Button
-            variant="quiet"
-            small
-            className={s.iconButton}
-            aria-label="Đăng xuất"
-            title="Đăng xuất"
-            onClick={() => void model.logout()}
-          >
-            <LogoutIcon />
-            <span className={s.logoutLabel}>Đăng xuất</span>
-          </Button>
-        </>
-      )}
-
+    <nav className={s.navigation} aria-label="Điều hướng chính">
+      <a href="/" aria-current={model.path === '/' ? 'page' : undefined}>Sổ chi tiêu</a>
+      <a href="/teams" aria-current={model.path === '/teams' ? 'page' : undefined}>Hội nhóm</a>
+    </nav>
+  );
+}
+function Account({ model }: { model: TingtingModel }) {
+  if (!model.viewer) return null;
+  return (
+    <div className={s.account}>
+      <Avatar name={model.viewer.name} />
+      <span className={s.accountName} title={model.viewer.name}>{model.viewer.name}</span>
     </div>
   );
 }
-
-function TeamsLink({ model, className }: { model: TingtingModel; className: string }) {
+function Logout({ model }: { model: TingtingModel }) {
   return (
-    <a
-      className={className}
-      href="/teams"
-      onClick={(event) => {
-        event.preventDefault();
-        model.navigate('/teams');
-      }}
-    >
-      Teams
-    </a>
+    <Button variant="quiet" small className={s.iconButton} aria-label="Đăng xuất" title="Đăng xuất" onClick={() => void model.logout()}>
+      <LogoutIcon />
+      <span className={s.logoutLabel}>Đăng xuất</span>
+    </Button>
   );
 }

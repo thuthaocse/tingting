@@ -21,7 +21,7 @@
   width: 52px;
   height: 52px;
   flex: 0 0 52px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   background: var(--color-soft);
   display: grid;
   place-items: center;
@@ -58,7 +58,7 @@
   --content-inset: var(--space-4);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
 }
 .stickyTabs {
   position: sticky;
@@ -132,14 +132,16 @@
   background: var(--color-action);
   color: var(--color-on-action);
   box-shadow: var(--shadow-floating);
-  font-size: 30px;
+  padding: 0;
+  display: grid;
+  place-items: center;
 }
 .error {
   background: var(--color-danger-bg);
   border: 1px solid var(--color-danger-border);
   color: var(--color-danger);
   padding: 12px 16px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   font-size: 0.8125rem;
   margin-bottom: 18px;
 }
@@ -188,7 +190,7 @@
   .identity {
     margin: 18px 0 12px;
     border: 1px solid var(--color-border);
-    border-radius: 9px;
+    border-radius: var(--radius-sm);
     padding: 0 10px;
     background: var(--color-surface);
     justify-content: space-between;
@@ -201,7 +203,7 @@
     font-size: 0.8125rem;
   }
   .content {
-    border-radius: 12px;
+    border-radius: var(--radius-md);
   }
   .contentInner {
     padding: 16px;

@@ -1,7 +1,8 @@
-import { Badge, Button, Tabs, GroupIcon, SettingsIcon, ShareIcon } from '@tingting/design-system';
+import { Badge, Button, Tabs, GroupIcon, SettingsIcon, ShareIcon, PlusIcon } from '@tingting/design-system';
 import { money } from '../../domain.mjs';
 import { MemberSelect, name } from '../../shared/forms';
 import type { Group } from '../../types';
+import EmptyState from '../../shared/empty-state/EmptyState';
 import Activity from '../activity/Activity';
 import ActivityLog from '../activity/ActivityLog';
 import PersonalBalances from '../balances/PersonalBalances';
@@ -45,17 +46,17 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
             </p>
           </div>
         </div>
-        <Badge>{model.viewer ? 'NHÓM CHIA SẺ' : 'CHỈ XEM'}</Badge>
+        <Badge>{model.viewer ? 'SỔ CHI TIÊU' : 'CHỈ XEM'}</Badge>
       </div>
       <div className={s.groupActions}>
         <Button variant="secondary" small onClick={() => void model.copy(g.token)}>
-          <ShareIcon /> Chia sẻ nhóm
+          <ShareIcon /> Chia sẻ sổ
         </Button>
         {model.admin && (
           <Button
             variant="secondary"
             small
-            aria-label="Cài đặt nhóm"
+            aria-label="Cài đặt sổ"
             onClick={() => setModal('settings')}
           >
             <SettingsIcon /> Cài đặt
@@ -70,7 +71,7 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
       {!model.viewer && (
         <>
           <p className={s.loginNotice}>
-            Đăng nhập để chỉnh sửa, tạo nhóm và quản lý chi tiêu của bạn.
+            Đăng nhập để chỉnh sửa, tạo sổ chi tiêu và quản lý chi tiêu của bạn.
           </p>
           <div className={s.identity}>
             <span className={s.muted}>Bạn là ai?</span>
@@ -97,6 +98,7 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
               <Activity
                 g={g}
                 identity={identity}
+                addExpense={model.canEdit ? () => { setExpense(undefined); setModal('expense'); } : undefined}
                 openExpense={(e) => {
                   setExpense(e);
                   setModal('detail');
@@ -140,7 +142,7 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
                     )}
                   </div>
                 ))}
-                {!allDebts.length && <p className={s.empty}>🎉 Cả nhóm đã thanh toán hết.</p>}
+                {!allDebts.length && <EmptyState compact><p>🎉 Cả nhóm đã thanh toán hết.</p></EmptyState>}
                 <div className={s.total}>
                   <span className={s.muted}>Còn cần thanh toán</span>
                   <strong>{money(allDebts.reduce((v, d) => v + d.amount, 0))}</strong>
@@ -161,7 +163,7 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
             setModal('expense');
           }}
         >
-          +
+          <PlusIcon />
         </button>
       )}
     </main>

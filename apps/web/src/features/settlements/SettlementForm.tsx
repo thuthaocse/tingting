@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Button, DateInput, Field, Input, MoneyInput } from '@tingting/design-system';
+import { useId, useState, type ReactNode } from 'react';
+import { Button, DateInput, Field, Input, Modal, MoneyInput } from '@tingting/design-system';
 import { today } from '../../domain.mjs';
 import type { Group, Settlement } from '../../types';
 import { Form, MemberSelect } from '../../shared/forms';
@@ -10,19 +10,33 @@ export default function SettlementForm({
   identity,
   busy,
   onSave,
+  onClose,
+  alert,
 }: {
   g: Group;
   value?: Partial<Settlement>;
   identity: string;
   busy: boolean;
   onSave: (x: unknown) => void;
+  onClose: () => void;
+  alert?: ReactNode;
 }) {
+  const formId = useId();
   const [amount, setAmount] = useState(value?.amount || 0);
   const [draftId] = useState(() => value?.id || crypto.randomUUID());
   const [from, setFrom] = useState(value?.fromId || identity),
     [to, setTo] = useState(value?.toId || g.members.find((m) => m.id !== identity)?.id || '');
   return (
-    <Form
+    <Modal
+      title={value?.id ? 'Chỉnh sửa thanh toán' : 'Thanh toán'}
+      onClose={onClose}
+      footer={<Button loading={busy} className={s.submit} type="submit" form={formId} disabled={busy || !amount || !from || !to || from === to}>
+        {busy ? 'Đang lưu…' : 'Thanh toán'}
+      </Button>}
+    >
+      {alert}
+      <Form
+      id={formId}
       onSubmit={(e) => {
         e.preventDefault();
         const f = new FormData(e.currentTarget);
@@ -61,9 +75,7 @@ export default function SettlementForm({
         />
       </Field>
       <p className={s.notice}>Chỉ ghi nhận khoản trả, không chuyển tiền.</p>
-      <Button disabled={busy || !amount || !from || !to || from === to}>
-        {busy ? 'Đang lưu…' : 'Thanh toán'}
-      </Button>
-    </Form>
+      </Form>
+    </Modal>
   );
 }

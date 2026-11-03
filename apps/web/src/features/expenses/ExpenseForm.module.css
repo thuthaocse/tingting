@@ -11,13 +11,13 @@
 .notice {
   background: var(--color-soft);
   padding: 11px 14px;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   font-size: 0.8125rem;
   color: var(--color-action);
 }
 .splitPicker {
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 .splitSummary {
@@ -70,7 +70,9 @@
 }
 .saveActions {
   display: flex;
-  justify-content: flex-end;
+}
+.saveActions > button {
+  width: 100%;
 }
 .grid2 {
   display: grid;
@@ -83,9 +85,6 @@
   }
   .grid2 input {
     font-size: 16px;
-  }
-  .saveActions > button {
-    width: 100%;
   }
 }
 

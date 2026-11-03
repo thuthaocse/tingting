@@ -12,7 +12,7 @@ export default function AccessManager({ onChange }: { onChange: () => Promise<vo
       <h1>Tài khoản và vai trò</h1>
       <div className={s.panel}>
         <div className={s.body}>
-          <p>Tài khoản đã đăng nhập tự có quyền tạo nhóm. Thêm email để cấp vai trò trước khi tài khoản đăng nhập.</p>
+          <p>Tài khoản đã đăng nhập tự có quyền tạo sổ chi tiêu. Thêm email để cấp vai trò trước khi tài khoản đăng nhập.</p>
           {access.error && (
             <p role="alert" className={s.error}>
               {access.error}

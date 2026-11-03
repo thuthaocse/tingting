@@ -1,4 +1,5 @@
 import { ChevronDownIcon } from '@tingting/design-system';
+import EmptyState from '../../shared/empty-state/EmptyState';
 import type { AccountDebt } from '../../api';
 import { money } from '../../domain.mjs';
 import s from './AccountSummary.module.css';
@@ -30,7 +31,7 @@ export default function AccountSummary({
             <strong>{money(item.amount)}</strong>
           </a>
         ))}
-        {!items.length && <p className={s.empty}>Không có khoản nào.</p>}
+        {!items.length && <EmptyState compact><p>Không có khoản nào.</p></EmptyState>}
       </div>
     </details>
   );

@@ -42,7 +42,7 @@
 .stat {
   padding: 18px 20px;
   background: var(--color-soft);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   margin: 16px 0 24px;
 }
 .stat strong {

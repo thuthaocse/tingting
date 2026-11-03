@@ -29,7 +29,7 @@ export default function Totals({ g }: { g: Group }) {
         />
       </div>
       <div className={s.stat}>
-        <span className={s.muted}>Tổng chi của nhóm</span>
+        <span className={s.muted}>Tổng chi của sổ</span>
         <strong>{money(expenses.reduce((v, e) => v + e.amount, 0))}</strong>
         <span className={s.muted}>
           {expenses.length} khoản chi · {g.members.length} thành viên

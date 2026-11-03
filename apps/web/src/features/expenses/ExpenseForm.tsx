@@ -44,7 +44,7 @@ export default function ExpenseForm({
       onClose={onClose}
       footer={
         <div className={s.saveActions}>
-          <Button type="submit" form={formId} disabled={busy || !ids.length || !validAmount}>
+          <Button loading={busy} type="submit" form={formId} disabled={busy || !ids.length || !validAmount}>
             {busy ? 'Đang lưu…' : 'Lưu khoản chi'}
           </Button>
         </div>

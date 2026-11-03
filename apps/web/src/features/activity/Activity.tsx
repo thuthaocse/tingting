@@ -1,3 +1,5 @@
+import { Button } from '@tingting/design-system';
+import EmptyState from '../../shared/empty-state/EmptyState';
 import { activityEntries } from './utils/activity.mjs';
 import type { Group, Expense, Settlement } from '../../types';
 import { money } from '../../domain.mjs';
@@ -8,11 +10,13 @@ export default function Activity({
   identity,
   openExpense,
   openSettlement,
+  addExpense,
 }: {
   g: Group;
   identity: string;
   openExpense: (e: Expense) => void;
   openSettlement: (s: Settlement) => void;
+  addExpense?: () => void;
 }) {
   const entries = activityEntries(g) as Array<{
     id: string;
@@ -23,6 +27,12 @@ export default function Activity({
   }>;
   return (
     <>
+      {!g.expenses.length && (
+        <EmptyState>
+          <p>Chưa có khoản chi nào. Thêm khoản chi đầu tiên nhé!</p>
+          {addExpense && <Button onClick={addExpense}>Thêm khoản chi</Button>}
+        </EmptyState>
+      )}
       {entries.map((row, i) => {
         const { expense, settlement } = row;
         const share = expense?.shares.find((x) => x.memberId === identity)?.amount || 0;
@@ -35,8 +45,8 @@ export default function Activity({
             {(i === 0 || entries[i - 1].date !== row.date) && (
               <p className={s.date}>
                 {new Date(row.date + 'T12:00:00').toLocaleDateString('vi-VN', {
-                  day: 'numeric',
-                  month: 'long',
+                  day: '2-digit',
+                  month: '2-digit',
                   year: 'numeric',
                 })}
               </p>
@@ -92,9 +102,6 @@ export default function Activity({
           </div>
         );
       })}
-      {!entries.length && (
-        <p className={s.empty}>Chưa có hoạt động. Thêm khoản chi đầu tiên nhé!</p>
-      )}
     </>
   );
 }

@@ -75,7 +75,7 @@ export function useTingting() {
           ]);
           if (request !== loadRequest.current) return;
           if (teamsResult.status === 'fulfilled') setTeams(teamsResult.value);
-          else setTeamsError('Không thể tải danh sách team. Vui lòng thử lại.');
+          else setTeamsError('Không thể tải hội nhóm. Vui lòng thử lại.');
           if (groupsResult.status === 'fulfilled') setGroups(groupsResult.value);
           if (dashboardResult.status === 'fulfilled') setDashboard(dashboardResult.value);
           if (groupsResult.status === 'rejected') throw groupsResult.reason;
@@ -193,7 +193,7 @@ export function useTingting() {
       setGroups((previous) => [created, ...previous]);
       setModal(null);
       await load();
-      notify('Đã tạo nhóm. Bạn có thể sao chép liên kết.');
+      notify('Đã tạo sổ chi tiêu. Bạn có thể sao chép liên kết.');
     } catch (error) {
       setError(err(error));
     } finally {
@@ -220,7 +220,7 @@ export function useTingting() {
         : await api.createTeam(name, members);
       setTeams((current) => [saved, ...current.filter((team) => team.id !== saved.id)]);
       closeTeamEditor();
-      notify(teamToEdit ? 'Đã cập nhật team' : 'Đã tạo team');
+      notify(teamToEdit ? 'Đã cập nhật hội nhóm' : 'Đã tạo hội nhóm');
     } catch (error) {
       setTeamEditorError(err(error));
     } finally {
@@ -235,7 +235,7 @@ export function useTingting() {
       await api.deleteTeam(teamToEdit.id, teamToEdit.version);
       setTeams((current) => current.filter((team) => team.id !== teamToEdit.id));
       closeTeamEditor();
-      notify('Đã xóa team');
+      notify('Đã xóa hội nhóm');
     } catch (error) {
       setTeamEditorError(err(error));
     } finally {

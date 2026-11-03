@@ -45,13 +45,26 @@ export default function GroupModal({ model }: { model: TingtingModel }) {
       />
     );
   }
+  if (modal === 'settlement' && g) {
+    return (
+      <SettlementForm
+        g={g}
+        value={settlement}
+        identity={identity}
+        busy={busy}
+        alert={alert}
+        onClose={() => setModal(null)}
+        onSave={(x) => mutate('saveSettlement', x)}
+      />
+    );
+  }
   return (
     <Modal
       key={modal}
       title={
         {
-          create: 'Tạo nhóm mới',
-          settings: 'Cài đặt nhóm',
+          create: 'Tạo sổ chi tiêu mới',
+          settings: 'Cài đặt sổ chi tiêu',
           detail: 'Chi tiết khoản chi',
           settlement: settlement?.id ? 'Chỉnh sửa thanh toán' : 'Thanh toán',
           'settlement-detail': 'Chi tiết thanh toán',
@@ -60,9 +73,21 @@ export default function GroupModal({ model }: { model: TingtingModel }) {
       onClose={() => setModal(null)}
       footer={
         modal === 'create' ? (
-          <Button type="submit" form={groupFormId} disabled={busy} className={s.createGroupButton}>
-            {busy ? 'Đang lưu…' : 'Tạo nhóm & lấy liên kết'}
+          <Button loading={busy} type="submit" form={groupFormId} disabled={busy} className={s.createGroupButton}>
+            {busy ? 'Đang lưu…' : 'Tạo sổ chi tiêu & lấy liên kết'}
           </Button>
+        ) : modal === 'settings' ? (
+          <div className={s.settingsActions}>
+            <Button loading={busy} type="submit" form={groupFormId} disabled={busy}>
+              {busy ? 'Đang lưu…' : 'Lưu thay đổi'}
+            </Button>
+            <Button variant="secondary" disabled={busy} onClick={() => {
+              if (confirm('Đổi liên kết sẽ vô hiệu hóa liên kết cũ. Tiếp tục?'))
+                void mutate('rotateLink');
+            }}>
+              Đổi liên kết
+            </Button>
+          </div>
         ) : modal === 'detail' && expense && model.canEdit && (
           <div className={s.expenseActions}>
             <Button onClick={() => setModal('expense')}>Chỉnh sửa</Button>
@@ -93,13 +118,10 @@ export default function GroupModal({ model }: { model: TingtingModel }) {
       {g && modal === 'settings' && (
         <Settings
           g={g}
+          formId={groupFormId}
           teams={model.teams}
           busy={busy}
           onSave={(x) => mutate('updateGroup', x)}
-          onRotate={() => {
-            if (confirm('Đổi liên kết sẽ vô hiệu hóa liên kết cũ. Tiếp tục?'))
-              void mutate('rotateLink');
-          }}
           onCopy={() => copy(g.token)}
         />
       )}
@@ -133,15 +155,6 @@ export default function GroupModal({ model }: { model: TingtingModel }) {
             ))}
           </section>
         </div>
-      )}
-      {g && modal === 'settlement' && (
-        <SettlementForm
-          g={g}
-          value={settlement}
-          identity={identity}
-          busy={busy}
-          onSave={(x) => mutate('saveSettlement', x)}
-        />
       )}
       {g && modal === 'settlement-detail' && settlement?.id && (
         <>

@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
+import { readFile } from 'node:fs/promises';
 import { createElement } from 'react';
 import { renderToString } from 'react-dom/server';
 import { createServer } from 'vite';
@@ -18,6 +19,12 @@ test('Vite renders shared design-system components and initial screens without a
     const components = await server.ssrLoadModule('../../packages/design-system/src/index.tsx');
     assert.match(renderToString(createElement(components.Logo)), /TingTing/);
     assert.match(renderToString(createElement(components.Button, {}, 'Ghi nhận')), /Ghi nhận/);
+    const loading = renderToString(createElement(components.LoadingIndicator));
+    assert.match(loading, /role="status"/);
+    assert.match(loading, /Đang tải/);
+    const saving = renderToString(createElement(components.Button, { loading: true, disabled: true }, 'Đang lưu…'));
+    assert.match(saving, /aria-busy="true"/);
+    assert.match(saving, /aria-hidden="true"/);
     const { default: LoginScreen } = await server.ssrLoadModule(
       '/src/features/admin/LoginScreen.tsx',
     );
@@ -115,13 +122,15 @@ test('Vite renders shared design-system components and initial screens without a
     assert.match(home, /Bạn cần trả/);
     assert.match(home, /Bạn được nhận/);
     assert.match(home, /Bình/);
-    assert.doesNotMatch(home, /Tạo nhóm/);
+    assert.doesNotMatch(home, /Tạo sổ chi tiêu/);
     const { default: AppHeader } = await server.ssrLoadModule('/src/app/components/AppHeader.tsx');
     const header = renderToString(
       createElement(AppHeader, { model: { viewer: { name: 'Thảo Trịnh' }, logout: () => {} } }),
     );
     assert.match(header, /Thảo Trịnh/);
-    assert.match(header, /Menu tài khoản/);
+    assert.match(header, /href="\/"[^>]*>Sổ chi tiêu/);
+    assert.match(header, /href="\/teams"[^>]*>Hội nhóm/);
+    assert.match(header, /aria-label="Menu"/);
     assert.match(header, /aria-label="Đăng xuất"/);
     assert.match(header, /<span[^>]*>Đăng xuất<\/span>/);
     assert.doesNotMatch(header, /Chia sẻ|Cài đặt nhóm/);
@@ -142,12 +151,14 @@ test('Vite renders shared design-system components and initial screens without a
       createElement(GroupScreen, { g: group, model: groupModel }),
     );
     assert.doesNotMatch(signedInGroup, /Bạn là ai|Chọn tên|Bạn đã thanh toán hết/);
-    assert.match(signedInGroup, /Chia sẻ nhóm/);
+    assert.match(signedInGroup, /<img[^>]+alt=""/);
+    assert.match(signedInGroup, /Chưa có khoản chi nào[\s\S]*>Thêm khoản chi<\/button>/);
+    assert.match(signedInGroup, /Chia sẻ sổ/);
     const adminGroup = renderToString(
       createElement(GroupScreen, { g: group, model: { ...groupModel, admin: true } }),
     );
-    assert.match(adminGroup, /Cài đặt nhóm/);
-    assert.match(adminGroup, /Chia sẻ nhóm/);
+    assert.match(adminGroup, /Cài đặt sổ/);
+    assert.match(adminGroup, /Chia sẻ sổ/);
     assert.doesNotMatch(signedInGroup, /♧/);
     const guestGroup = renderToString(
       createElement(GroupScreen, {
@@ -156,6 +167,31 @@ test('Vite renders shared design-system components and initial screens without a
       }),
     );
     assert.match(guestGroup, /Bạn là ai/);
+    const { default: Activity } = await server.ssrLoadModule('/src/features/activity/Activity.tsx');
+    const settlementOnly = renderToString(createElement(Activity, {
+      g: { ...group, settlements: [{ id: 's', date: '2026-11-02', fromId: 'a', toId: 'b', amount: 1000 }] },
+      identity: '', addExpense: () => {}, openExpense: () => {}, openSettlement: () => {},
+    }));
+    assert.match(settlementOnly, /Chưa có khoản chi nào[\s\S]*>Thêm khoản chi<\/button>/);
+    assert.match(settlementOnly, /An đã trả Bình/);
+    assert.match(settlementOnly, /02\/11\/2026/);
+    assert.doesNotMatch(settlementOnly, /ngày 2 tháng 11/);
+    assert.doesNotMatch(guestGroup, />Thêm khoản chi<\/button>/);
+    const payment = renderToString(createElement(GroupModal, {
+      model: {
+        g: group, modal: 'settlement', canEdit: true, busy: false, identity: 'a',
+        settlement: { fromId: 'a', toId: 'b', amount: 1000 }, setModal: () => {},
+      },
+    }));
+    const paymentFormId = payment.match(/<form id="([^"]+)"/)[1];
+    assert.match(payment, new RegExp(`form="${paymentFormId}"`));
+    assert.match(payment, /Chỉ ghi nhận khoản trả[\s\S]*Thanh toán<\/button>/);
+    const settings = renderToString(createElement(GroupModal, {
+      model: { g: group, modal: 'settings', admin: true, teams: [], busy: false, setModal: () => {} },
+    }));
+    const formId = settings.match(/<form id="([^"]+)"/)[1];
+    assert.ok(settings.includes(`form="${formId}"`));
+    assert.match(settings, /Lưu thay đổi[\s\S]*Đổi liên kết/);
     assert.doesNotMatch(home, /Chưa gắn email/);
     const creatorHome = renderToString(
       createElement(Dashboard, {
@@ -169,7 +205,7 @@ test('Vite renders shared design-system components and initial screens without a
         },
       }),
     );
-    assert.match(creatorHome, /Tạo nhóm/);
+    assert.match(creatorHome, /Tạo sổ chi tiêu/);
     assert.doesNotMatch(creatorHome, /Quản lý quyền/);
     const { default: Preview } = await server.ssrLoadModule(
       '/src/features/design-preview/DesignPreview.tsx',
@@ -177,5 +213,21 @@ test('Vite renders shared design-system components and initial screens without a
     assert.match(renderToString(createElement(Preview)), /DESIGN SYSTEM/);
   } finally {
     await server.close();
+  }
+});
+
+
+test('installed app metadata points to TingTing icons and opens the home page', async () => {
+  const html = await readFile(`${root}/index.html`, 'utf8');
+  const manifest = JSON.parse(await readFile(`${root}/public/manifest.webmanifest`, 'utf8'));
+  assert.match(html, /<title>TingTing<\/title>/);
+  assert.match(html, /apple-touch-icon\.png/);
+  assert.equal(manifest.name, 'TingTing');
+  assert.equal(manifest.start_url, '/');
+  assert.equal(manifest.background_color, '#c4b5fd');
+  for (const icon of manifest.icons) {
+    const png = await readFile(`${root}/public${icon.src.split('?')[0]}`);
+    assert.equal(png.subarray(1, 4).toString(), 'PNG');
+    assert.equal(png.readUInt32BE(16), Number(icon.sizes.split('x')[0]));
   }
 });

@@ -1,3 +1,4 @@
+import EmptyState from '../../shared/empty-state/EmptyState';
 import type { ActivityEvent } from '../../api';
 import s from './Activity.module.css';
 
@@ -31,7 +32,7 @@ export default function ActivityLog({ events }: { events: ActivityEvent[] }) {
           </div>
         );
       })}
-      {!ordered.length && <p className={s.empty}>Chưa có hoạt động nào.</p>}
+      {!ordered.length && <EmptyState><p>Chưa có hoạt động nào.</p></EmptyState>}
     </>
   );
 }

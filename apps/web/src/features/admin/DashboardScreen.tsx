@@ -1,6 +1,7 @@
 import { Button, Input } from '@tingting/design-system';
 import type { TingtingModel } from '../../app/hooks/useTingting';
 import { money } from '../../domain.mjs';
+import EmptyState from '../../shared/empty-state/EmptyState';
 import AccountSummary from './AccountSummary';
 import s from './DashboardScreen.module.css';
 export default function DashboardScreen({ model }: { model: TingtingModel }) {
@@ -13,9 +14,9 @@ export default function DashboardScreen({ model }: { model: TingtingModel }) {
       <div className={s.heading}>
         <div>
           <p className={s.eyebrow}>CHÀO {viewer?.name}</p>
-          <h1>Nhóm chi tiêu</h1>
+          <h1>Sổ chi tiêu</h1>
         </div>
-        {model.canCreate && <Button onClick={() => setModal('create')}>+ Tạo nhóm</Button>}
+        {model.canCreate && <Button onClick={() => setModal('create')}>+ Tạo sổ chi tiêu</Button>}
       </div>
       {model.admin && (
         <nav className={s.managementLinks} aria-label="Quản lý">
@@ -42,10 +43,10 @@ export default function DashboardScreen({ model }: { model: TingtingModel }) {
           />
         </section>
       )}
-      <p className={s.muted}>Tổng từ các nhóm bạn tham gia · Theo email {viewer?.email}</p>
+      <p className={s.muted}>Tổng từ các sổ bạn tham gia · Theo email {viewer?.email}</p>
       <Input
-        aria-label="Tìm nhóm"
-        placeholder="Tìm kiếm nhóm…"
+        aria-label="Tìm sổ"
+        placeholder="Tìm kiếm sổ…"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
@@ -102,9 +103,9 @@ export default function DashboardScreen({ model }: { model: TingtingModel }) {
         })}
       </div>
       {!filtered.length && (
-        <p className={s.empty}>
-          {groups.length ? 'Không tìm thấy nhóm phù hợp.' : 'Chưa có nhóm nào.'}
-        </p>
+        <EmptyState>
+          <p>{groups.length ? 'Không tìm thấy sổ phù hợp.' : 'Chưa có sổ nào.'}</p>
+        </EmptyState>
       )}
     </main>
   );

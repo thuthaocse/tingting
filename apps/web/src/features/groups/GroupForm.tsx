@@ -57,7 +57,7 @@ export default function GroupForm({
         });
       }}
     >
-      <Field label="Tên nhóm">
+      <Field label="Tên sổ chi tiêu">
         <Input
           name="name"
           defaultValue={value?.name}
@@ -80,10 +80,10 @@ export default function GroupForm({
       </div>
       {teams.length > 0 && (
         <div className={s.teamPicker}>
-          <Field label="Thêm thành viên từ team">
+          <Field label="Thêm từ hội nhóm">
             <Input
-              aria-label="Tìm team hoặc thành viên"
-              placeholder="Tìm theo tên team hoặc thành viên…"
+              aria-label="Tìm hội nhóm hoặc thành viên"
+              placeholder="Tìm theo tên hội nhóm hoặc thành viên…"
               value={teamSearch}
               onChange={(event) => setTeamSearch(event.target.value)}
             />
@@ -110,7 +110,7 @@ export default function GroupForm({
                         className={s.addTeamButton}
                         onClick={() => setMembers((current) => addMembers(current, visibleMembers))}
                       >
-                        + Thêm cả team
+                        + Thêm cả hội nhóm
                       </button>
                     ) : null}
                     {visibleMembers.map((member) => {
@@ -134,7 +134,7 @@ export default function GroupForm({
               );
             })}
             {!matchingTeams.length && (
-              <p className={s.noTeamResults}>Không tìm thấy team hoặc thành viên.</p>
+              <p className={s.noTeamResults}>Không tìm thấy hội nhóm hoặc thành viên.</p>
             )}
           </div>
         </div>
@@ -178,10 +178,10 @@ export default function GroupForm({
       >
         + Thêm thành viên
       </Button>
-      <small>Thành viên sẽ chọn tên khi mở liên kết nhóm.</small>
+      <small>Thành viên sẽ chọn tên khi mở liên kết sổ.</small>
       {!formId && (
-        <Button disabled={busy}>
-          {busy ? 'Đang lưu…' : value ? 'Lưu thay đổi' : 'Tạo nhóm & lấy liên kết'}
+        <Button loading={busy} disabled={busy}>
+          {busy ? 'Đang lưu…' : value ? 'Lưu thay đổi' : 'Tạo sổ chi tiêu & lấy liên kết'}
         </Button>
       )}
     </Form>

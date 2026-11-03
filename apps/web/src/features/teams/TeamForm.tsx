@@ -36,7 +36,7 @@ export default function TeamForm({
         onSave(String(data.get('name') || ''), members);
       }}
     >
-      <Field label="Tên team">
+      <Field label="Tên hội nhóm">
         <Input
           name="name"
           defaultValue={team?.name}
@@ -114,8 +114,8 @@ export default function TeamForm({
           Hủy
         </Button>
         {!isTeamEmpty && (
-          <Button disabled={busy}>
-            {busy ? 'Đang lưu…' : team ? 'Lưu thay đổi' : 'Tạo team'}
+          <Button loading={busy} disabled={busy}>
+            {busy ? 'Đang lưu…' : team ? 'Lưu thay đổi' : 'Tạo hội nhóm'}
           </Button>
         )}
         {team && (
@@ -126,7 +126,7 @@ export default function TeamForm({
             disabled={busy}
             onClick={onDelete}
           >
-            Xóa team
+            Xóa hội nhóm
           </Button>
         )}
       </div>

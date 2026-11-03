@@ -1,4 +1,4 @@
-import { Button } from '@tingting/design-system';
+import { Button, LoadingIndicator } from '@tingting/design-system';
 import { useTingting, type TingtingModel } from './app/hooks/useTingting';
 import LoginScreen from './features/admin/LoginScreen';
 import DashboardScreen from './features/admin/DashboardScreen';
@@ -27,7 +27,7 @@ export default function App() {
   );
 }
 function CurrentScreen({ model }: { model: TingtingModel }) {
-  if (model.loading) return <div className={s.loading}>Đang tải…</div>;
+  if (model.loading) return <LoadingIndicator />;
   if (model.path === '/admin/access')
     return model.viewer && model.admin ? (
       <AccessManager onChange={model.load} />
@@ -44,7 +44,7 @@ function CurrentScreen({ model }: { model: TingtingModel }) {
     return (
       <main className={s.page}>
         <p role="alert" className={s.error}>
-          {model.error || 'Không tìm thấy nhóm'}
+          {model.error || 'Không tìm thấy sổ chi tiêu'}
         </p>
         <Button onClick={() => void model.load()}>Thử lại</Button>
       </main>
