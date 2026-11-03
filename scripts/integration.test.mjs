@@ -276,6 +276,7 @@ test('GraphQL workflow: permissions, conservation, partial repayment, conflicts,
     );
     assert.ok(activity.some((event) => event.action === 'delete_expense'));
     assert.ok(activity.some((event) => event.action === 'save_expense'));
+    assert.ok(activity.some((event) => event.action === 'save_expense' && event.actorName === members[1].name));
     assert.ok(!JSON.stringify(activity).includes('@example.com'));
     cookie = process.env.TEST_ADMIN_COOKIE;
     group = result(await command('rotateLink', group), 'rotateLink');

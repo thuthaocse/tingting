@@ -68,13 +68,21 @@ async fn actor_name(
     let Some(user) = store.read::<User>("USER", user_id).await? else {
         return Ok("Người dùng đã đăng nhập".into());
     };
-    Ok(stored
-        .group
-        .members
-        .iter()
-        .find(|member| member.email.as_deref() == Some(user.value.email.as_str()))
-        .map(|member| member.name.clone())
-        .unwrap_or_else(|| "Người dùng đã đăng nhập".into()))
+    Ok(display_actor_name(&stored.group, &user.value))
+}
+
+fn display_actor_name(group: &crate::domain::Group, user: &User) -> String {
+    if let Some(member_id) = crate::dashboard::matched_member(group, &user.email) {
+        if let Some(member) = group.members.iter().find(|member| member.id == member_id) {
+            return member.name.clone();
+        }
+    }
+    let name = user.name.trim();
+    if name.is_empty() || name.contains('@') {
+        "Người dùng đã đăng nhập".into()
+    } else {
+        name.into()
+    }
 }
 
 fn summary(action: &str, value: &Value) -> String {
@@ -245,8 +253,29 @@ fn text(value: &Value, field: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::summary;
+    use super::{display_actor_name, summary};
+    use crate::{auth::User, domain::Group};
     use serde_json::json;
+
+    #[test]
+    fn actor_name_prefers_member_name_and_does_not_expose_email() {
+        let group: Group = serde_json::from_value(json!({
+            "id":"g", "name":"Group", "description":"", "token":"g", "version":1,
+            "members":[{"id":"m", "name":"Tên trong nhóm", "email":"member@example.com"}],
+            "expenses":[], "settlements":[]
+        }))
+        .unwrap();
+        let mut user = User {
+            id: "u".into(),
+            email: "MEMBER@example.com".into(),
+            name: "Tên Google".into(),
+        };
+        assert_eq!(display_actor_name(&group, &user), "Tên trong nhóm");
+        user.email = "other@example.com".into();
+        assert_eq!(display_actor_name(&group, &user), "Tên Google");
+        user.name = user.email.clone();
+        assert_eq!(display_actor_name(&group, &user), "Người dùng đã đăng nhập");
+    }
 
     #[test]
     fn member_activity_reports_changed_fields_without_exposing_emails() {
