@@ -5,7 +5,7 @@
   gap: 8px;
   min-height: 42px;
   padding: 9px 17px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   background: var(--color-action);
   color: var(--color-on-action);
@@ -58,6 +58,17 @@
   min-width: 0;
   font-weight: 400;
 }
+.input[type='date'] {
+  display: block;
+  appearance: none;
+  max-width: 100%;
+  text-align: left;
+}
+.input[type='date']::-webkit-date-and-time-value {
+  min-height: 1lh;
+  margin: 0;
+  text-align: left;
+}
 .help {
   font-weight: 400;
   color: var(--color-muted);
@@ -79,11 +90,12 @@
 .logo {
   display: inline-flex;
   align-items: center;
-  font-size: 1.6rem;
-  font-weight: 800;
-  letter-spacing: -0.06em;
-  color: var(--color-ink);
   text-decoration: none;
+}
+.logo img {
+  display: block;
+  width: 150px;
+  height: auto;
 }
 .tabs {
   display: flex;
@@ -125,15 +137,14 @@
   box-shadow: var(--shadow-dialog);
 }
 .dialog[open] {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
 }
 .dialogHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  flex-shrink: 0;
   padding: 18px 24px;
   border-bottom: 1px solid var(--color-border);
 }
@@ -142,20 +153,30 @@
   font-size: 1.0625rem;
   overflow-wrap: anywhere;
 }
-.dialogHeader button {
+.dialogHeader h2:focus {
+  outline: none;
+}
+.closeButton {
   flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  font-size: 1.25rem;
+  line-height: 1;
 }
 .dialogBody {
+  min-width: 0;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden auto;
   overscroll-behavior: contain;
   padding: 20px 24px 24px;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
 }
-.dialog :global(button) {
-  border-radius: 0;
+.dialogFooter {
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--color-border);
 }
 .dialogBody::-webkit-scrollbar {
   width: 6px;
@@ -182,17 +203,29 @@
   .dialog {
     width: 100%;
     max-width: 100%;
-    height: 100dvh;
-    max-height: 100dvh;
+    position: fixed;
+    inset: auto 0 0;
+    max-height: 90dvh;
     border: 0;
-    border-radius: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     margin: 0;
   }
   .dialogHeader {
-    padding: calc(16px + env(safe-area-inset-top, 0px)) 20px 16px;
+    padding: var(--space-4);
   }
   .dialogBody {
-    padding: 16px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+    padding: var(--space-4) var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+    scrollbar-gutter: auto;
+  }
+  .dialogHeader,
+  .dialogFooter {
+    padding-inline: var(--space-4);
+  }
+  .dialogFooter {
+    padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  }
+  .dialogBody:has(+ .dialogFooter) {
+    padding-bottom: var(--space-4);
   }
   .tabs {
     gap: 0;
@@ -201,7 +234,10 @@
     flex: 1;
   }
   .logo {
-    font-size: 1.45rem;
+    width: auto;
+  }
+  .logo img {
+    width: 126px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -8,6 +8,7 @@ export function SearchSelect({
   label = 'Chọn một mục',
   placeholder = 'Chọn một mục',
   searchPlaceholder = 'Tìm kiếm…',
+  className = '',
 }: {
   options: SelectOption[];
   value: string;
@@ -15,10 +16,11 @@ export function SearchSelect({
   label?: string;
   placeholder?: string;
   searchPlaceholder?: string;
+  className?: string;
 }) {
   const select = useSearchSelect(options, value, onChange);
   return (
-    <div ref={select.root} className={s.root}>
+    <div ref={select.root} className={`${s.root} ${className}`}>
       <div className={s.control} data-open={select.open}>
         <input
           ref={select.input}

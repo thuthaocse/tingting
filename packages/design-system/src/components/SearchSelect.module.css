@@ -8,10 +8,12 @@
   position: relative;
 }
 .control input {
+  display: block;
   width: 100%;
+  max-width: 100%;
   min-width: 0;
   min-height: 44px;
-  padding: 10px 38px 10px 12px;
+  padding: 10px 42px 10px 12px;
   border: 1px solid var(--color-border);
   border-radius: 9px;
   background: var(--color-surface);
@@ -22,7 +24,7 @@
 }
 .chevron {
   position: absolute;
-  right: 12px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;

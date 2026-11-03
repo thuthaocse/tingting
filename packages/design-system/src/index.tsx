@@ -1,11 +1,14 @@
 import {
   useEffect,
+  useId,
   useRef,
   type ButtonHTMLAttributes,
+  type CSSProperties,
   type InputHTMLAttributes,
   type ReactNode,
 } from 'react';
 import s from './ui.module.css';
+import wordmark from './assets/tingting-wordmark.png';
 export function Button({
   variant = 'primary',
   small = false,
@@ -57,7 +60,7 @@ export function Avatar({ name }: { name: string }) {
 export function Logo() {
   return (
     <a href="/" className={s.logo} aria-label="TingTing — Trang chủ">
-      TingTing
+      <img src={wordmark} alt="" />
     </a>
   );
 }
@@ -88,53 +91,83 @@ export function Tabs({
 export function Badge({ children, positive = false }: { children: ReactNode; positive?: boolean }) {
   return <span className={`${s.badge} ${positive ? s.positive : ''}`}>{children}</span>;
 }
+let modalCount = 0;
+let pageOverflow = '';
+
 export function Modal({
   title,
   onClose,
   children,
+  footer,
+  style,
+  className = '',
 }: {
   title: string;
   onClose: () => void;
   children: ReactNode;
+  footer?: ReactNode;
+  style?: CSSProperties;
+  className?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const titleId = useId();
   useEffect(() => {
     const dialog = ref.current;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const unlockPage = lockPageScroll();
     dialog?.showModal();
+    titleRef.current?.focus({ preventScroll: true });
     return () => {
       dialog?.close();
-      document.body.style.overflow = previousOverflow;
+      unlockPage();
     };
   }, []);
   return (
     <div className={s.overlay}>
       <dialog
         ref={ref}
-        aria-labelledby="dialog-title"
-        className={s.dialog}
+        aria-labelledby={titleId}
+        className={`${s.dialog} ${className}`}
+        style={style}
         onCancel={(e) => {
           e.preventDefault();
           onClose();
         }}
       >
         <div className={s.dialogHeader}>
-          <h2 id="dialog-title">{title}</h2>
-          <Button variant="quiet" aria-label="Đóng" onClick={onClose}>
+          <h2 id={titleId} ref={titleRef} tabIndex={-1}>
+            {title}
+          </h2>
+          <Button type="button" variant="quiet" className={s.closeButton} aria-label="Đóng" onClick={onClose}>
             ✕
           </Button>
         </div>
         <div className={s.dialogBody}>{children}</div>
+        {footer && <div className={s.dialogFooter}>{footer}</div>}
       </dialog>
     </div>
   );
 }
+function lockPageScroll() {
+  if (modalCount === 0) {
+    pageOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+  }
+  modalCount += 1;
+  return () => {
+    modalCount -= 1;
+    if (modalCount === 0) document.body.style.overflow = pageOverflow;
+  };
+}
+
 export { s as uiStyles };
 
+export { DateInput } from './components/DateInput';
+export { searchKey } from './utils/inputs.mjs';
 export { MoneyInput } from './components/MoneyInput';
 export { SearchSelect } from './components/SearchSelect';
 export {
+  CopyIcon,
   ChevronDownIcon,
   ShareIcon,
   SettingsIcon,

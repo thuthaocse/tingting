@@ -41,26 +41,17 @@ export function useSearchSelect(
     restoringFocus.current = false;
   };
   useLayoutEffect(() => {
-    if (!open || !input.current || !popup.current) return;
+    const anchor = input.current;
     const panel = popup.current;
-    const place = () => {
-      const rect = input.current!.getBoundingClientRect();
-      const below = window.innerHeight - rect.bottom - 12;
-      const above = rect.top - 12;
-      const upward = below < 180 && above > below;
-      const height = Math.min(256, upward ? above : below);
-      setPosition({
-        left: Math.max(8, Math.min(rect.left, window.innerWidth - rect.width - 8)),
-        top: upward ? rect.top - 6 : rect.bottom + 6,
-        width: rect.width,
-        maxHeight: Math.max(80, height),
-        transform: upward ? 'translateY(-100%)' : 'none',
-      });
-    };
+    if (!open || !anchor || !panel) return;
+    const viewport = window.visualViewport;
+    const place = () => setPosition(popupPosition(anchor.getBoundingClientRect(), viewport));
     place();
     if (typeof panel.showPopover === 'function') panel.showPopover();
     window.addEventListener('resize', place);
     window.addEventListener('scroll', place, true);
+    viewport?.addEventListener('resize', place);
+    viewport?.addEventListener('scroll', place);
     const outside = (event: PointerEvent) => {
       const target = event.target as Node;
       if (!root.current?.contains(target) && !panel.contains(target)) close();
@@ -70,12 +61,13 @@ export function useSearchSelect(
       if (panel.matches(':popover-open')) panel.hidePopover();
       window.removeEventListener('resize', place);
       window.removeEventListener('scroll', place, true);
+      viewport?.removeEventListener('resize', place);
+      viewport?.removeEventListener('scroll', place);
       document.removeEventListener('pointerdown', outside);
     };
   }, [open]);
   useEffect(() => {
-    if (open)
-      popup.current?.querySelector('[data-active="true"]')?.scrollIntoView({ block: 'nearest' });
+    if (open && popup.current) revealActiveOption(popup.current);
   }, [active, open]);
   const keyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
@@ -114,4 +106,34 @@ export function useSearchSelect(
     choose,
     keyDown,
   };
+}
+
+function popupPosition(anchor: DOMRect, viewport: VisualViewport | null) {
+  const inset = 8;
+  const gap = 6;
+  const left = (viewport?.offsetLeft ?? 0) + inset;
+  const top = (viewport?.offsetTop ?? 0) + inset;
+  const right = left + (viewport?.width ?? window.innerWidth) - 2 * inset;
+  const bottom = top + (viewport?.height ?? window.innerHeight) - 2 * inset;
+  const above = Math.min(anchor.top - gap, bottom) - top;
+  const below = bottom - Math.max(anchor.bottom + gap, top);
+  const upward = below < 180 && above > below;
+  const width = Math.min(anchor.width, Math.max(0, right - left));
+  return {
+    left: Math.max(left, Math.min(anchor.left, right - width)),
+    top: upward ? Math.min(anchor.top - gap, bottom) : Math.max(anchor.bottom + gap, top),
+    width,
+    maxHeight: Math.max(0, Math.min(256, upward ? above : below)),
+    transform: upward ? 'translateY(-100%)' : 'none',
+  };
+}
+
+function revealActiveOption(panel: HTMLElement) {
+  const option = panel.querySelector('[data-active="true"]');
+  if (!option) return;
+  const bounds = panel.getBoundingClientRect();
+  const optionBounds = option.getBoundingClientRect();
+  const scrollTop = optionBounds.top - bounds.top - panel.clientTop;
+  const scrollBottom = scrollTop + optionBounds.height - panel.clientHeight;
+  panel.scrollTop += Math.min(0, scrollTop) + Math.max(0, scrollBottom);
 }

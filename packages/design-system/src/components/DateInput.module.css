@@ -1,0 +1,29 @@
+.root {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+.date.date {
+  color: transparent;
+}
+.date::-webkit-datetime-edit,
+.date::-webkit-date-and-time-value {
+  opacity: 0;
+}
+.value {
+  position: absolute;
+  inset-inline: var(--space-3) var(--space-6);
+  top: 50%;
+  transform: translateY(-50%);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--color-ink);
+  font-weight: 400;
+  pointer-events: none;
+}
+@media (max-width: 640px) {
+  .value {
+    font-size: 16px;
+  }
+}
