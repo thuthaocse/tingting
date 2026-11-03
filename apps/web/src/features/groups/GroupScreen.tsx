@@ -1,3 +1,4 @@
+import { t as translate } from '../../app/i18n/language';
 import { Badge, Button, Tabs, GroupIcon, SettingsIcon, ShareIcon, PlusIcon } from '@tingting/design-system';
 import { money } from '../../domain.mjs';
 import { MemberSelect, name } from '../../shared/forms';
@@ -7,15 +8,15 @@ import Activity from '../activity/Activity';
 import ActivityLog from '../activity/ActivityLog';
 import PersonalBalances from '../balances/PersonalBalances';
 import Totals from '../totals/Totals';
-const tabs = [
-  { id: 'activity', label: 'Khoản chi' },
-  { id: 'balances', label: 'Khoản nợ' },
-  { id: 'totals', label: 'Tổng chi' },
-  { id: 'log', label: 'Hoạt động' },
-];
 import type { TingtingModel } from '../../app/hooks/useTingting';
 import s from './GroupScreen.module.css';
 export default function GroupScreen({ model, g }: { model: TingtingModel; g: Group }) {
+  const tabs = [
+    { id: 'activity', label: translate("Khoản chi") },
+    { id: 'balances', label: translate("Khoản nợ") },
+    { id: 'totals', label: translate("Tổng chi") },
+    { id: 'log', label: translate("Hoạt động") },
+  ];
   const {
     error,
     identity,
@@ -42,29 +43,29 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
           <div>
             <h1>{g.name}</h1>
             <p className={s.muted}>
-              {g.members.length} thành viên · VND
+              {g.members.length} {translate("thành viên")} · VND
             </p>
           </div>
         </div>
-        <Badge>{model.viewer ? 'SỔ CHI TIÊU' : 'CHỈ XEM'}</Badge>
+        <Badge>{model.viewer ? translate("SỔ CHI TIÊU") : translate("CHỈ XEM")}</Badge>
       </div>
       <div className={s.groupActions}>
         <Button variant="secondary" small onClick={() => void model.copy(g.token)}>
-          <ShareIcon /> Chia sẻ sổ
+          <ShareIcon /> {translate("Chia sẻ sổ")}
         </Button>
         {model.admin && (
           <Button
             variant="secondary"
             small
-            aria-label="Cài đặt sổ"
+            aria-label={translate("Cài đặt sổ")}
             onClick={() => setModal('settings')}
           >
-            <SettingsIcon /> Cài đặt
+            <SettingsIcon /> {translate("Cài đặt")}
           </Button>
         )}
         {model.canEdit && (
           <Button variant="secondary" small onClick={() => { setSettlement(undefined); setModal('settlement'); }}>
-            Thanh toán
+            {translate("Thanh toán")}
           </Button>
         )}
       </div>
@@ -76,11 +77,11 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
       {!model.viewer && (
         <>
           <p className={s.loginNotice}>
-            Đăng nhập để chỉnh sửa, tạo sổ chi tiêu và quản lý chi tiêu của bạn.
+            {translate("Đăng nhập để chỉnh sửa, tạo sổ chi tiêu và quản lý chi tiêu của bạn.")}
           </p>
           <div className={s.identity}>
-            <span className={s.muted}>Bạn là ai?</span>
-            <MemberSelect g={g} value={identity} onChange={choose} label="Bạn là ai?" />
+            <span className={s.muted}>{translate("Bạn là ai?")}</span>
+            <MemberSelect g={g} value={identity} onChange={choose} label={translate("Bạn là ai?")} />
           </div>
         </>
       )}
@@ -118,17 +119,17 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
             ) : tab === 'balances' ? (
               <>
                 <div className={s.contentHeader}>
-                  <h2>Ai cần trả cho ai</h2>
+                  <h2>{translate("Ai cần trả cho ai")}</h2>
                   <label className={s.switch}>
                     <input
                       type="checkbox"
                       checked={simplified}
                       onChange={(e) => setSimplified(e.target.checked)}
                     />
-                    Đơn giản hóa nợ
+                    {translate("Đơn giản hóa nợ")}
                   </label>
                 </div>
-                <p className={s.muted}>Giữ nguyên số dư, giảm số lần chuyển tiền.</p>
+                <p className={s.muted}>{translate("Giữ nguyên số dư, giảm số lần chuyển tiền.")}</p>
                 {allDebts.map((d) => (
                   <div
                     key={d.fromId + d.toId}
@@ -142,7 +143,7 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
                     <strong>{money(d.amount)}</strong>
                     {model.canEdit && (
                       <Button variant="quiet" small onClick={() => pay(d)}>
-                        Thanh toán
+                        {translate("Thanh toán")}
                       </Button>
                     )}
                   </div>
@@ -150,12 +151,12 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
                 {!allDebts.length && (
                   <div className={s.empty}>
                     <EmptyState compact>
-                      <p>{g.expenses.length ? '🎉 Cả nhóm đã thanh toán hết.' : 'Không có khoản nợ.'}</p>
+                      <p>{g.expenses.length ? translate("🎉 Cả nhóm đã thanh toán hết.") : translate("Không có khoản nợ.")}</p>
                     </EmptyState>
                   </div>
                 )}
                 <div className={s.total}>
-                  <span className={s.muted}>Còn cần thanh toán</span>
+                  <span className={s.muted}>{translate("Còn cần thanh toán")}</span>
                   <strong>{money(allDebts.reduce((v, d) => v + d.amount, 0))}</strong>
                 </div>
               </>
@@ -168,7 +169,7 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
       {model.canEdit && (
         <button
           className={s.fab}
-          aria-label="Thêm khoản chi"
+          aria-label={translate("Thêm khoản chi")}
           onClick={() => {
             setExpense(undefined);
             setModal('expense');

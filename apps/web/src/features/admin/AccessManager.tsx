@@ -1,3 +1,4 @@
+import { t as translate } from '../../app/i18n/language';
 import { Button, Field, Input, SearchSelect } from '@tingting/design-system';
 import { useAccessManager } from './hooks/useAccessManager';
 import s from './AccessManager.module.css';
@@ -9,10 +10,10 @@ export default function AccessManager({ onChange }: { onChange: () => Promise<vo
   const access = useAccessManager(onChange);
   return (
     <main className={s.page}>
-      <h1>Tài khoản</h1>
+      <h1>{translate("Tài khoản")}</h1>
       <div className={s.panel}>
         <div className={s.body}>
-          <p>Tài khoản đã đăng nhập tự có quyền tạo sổ chi tiêu. Thêm email để cấp vai trò trước khi tài khoản đăng nhập.</p>
+          <p>{translate("Tài khoản đã đăng nhập tự có quyền tạo sổ chi tiêu. Thêm email để cấp vai trò trước khi tài khoản đăng nhập.")}</p>
           {access.error && (
             <p role="alert" className={s.error}>
               {access.error}
@@ -34,15 +35,15 @@ export default function AccessManager({ onChange }: { onChange: () => Promise<vo
                 placeholder="ten@gmail.com"
               />
             </Field>
-            <Field label="Vai trò">
+            <Field label={translate("Vai trò")}>
               <SearchSelect
-                label="Vai trò được cấp"
+                label={translate("Vai trò được cấp")}
                 options={roles}
                 value={access.role}
                 onChange={access.setRole}
               />
             </Field>
-            <Button disabled={access.busy}>Thêm quyền</Button>
+            <Button disabled={access.busy}>{translate("Thêm quyền")}</Button>
           </form>
           <div className={s.root}>
             <span>thuthao.cse@gmail.com</span>
@@ -52,7 +53,7 @@ export default function AccessManager({ onChange }: { onChange: () => Promise<vo
             <div key={grant.email} className={s.row}>
               <span className={s.email}>{grant.email}</span>
               <SearchSelect
-                label={`Vai trò của ${grant.email}`}
+                label={`${translate("Vai trò của")} ${grant.email}`}
                 options={roles}
                 value={grant.role}
                 onChange={(role) => void access.save(grant.email, role)}
@@ -64,7 +65,7 @@ export default function AccessManager({ onChange }: { onChange: () => Promise<vo
                   disabled={access.busy}
                   onClick={() => void access.save(grant.email, null)}
                 >
-                  Thu hồi
+                  {translate("Thu hồi")}
                 </Button>
               )}
             </div>

@@ -1,3 +1,4 @@
+import { t as translate } from '../../app/i18n/language';
 import { useId, useState, type ReactNode } from 'react';
 import {
   Avatar,
@@ -40,12 +41,12 @@ export default function ExpenseForm({
   return (
     <Modal
       className={s.expenseDialog}
-      title={value ? 'Chỉnh sửa khoản chi' : 'Thêm khoản chi'}
+      title={value ? translate("Chỉnh sửa khoản chi") : translate("Thêm khoản chi")}
       onClose={onClose}
       footer={
         <div className={s.saveActions}>
           <Button loading={busy} type="submit" form={formId} disabled={busy || !ids.length || !validAmount}>
-            {busy ? 'Đang lưu…' : 'Lưu khoản chi'}
+            {busy ? translate("Đang lưu…") : translate("Lưu khoản chi")}
           </Button>
         </div>
       }
@@ -67,28 +68,28 @@ export default function ExpenseForm({
           });
         }}
       >
-        <Field label="Tên khoản chi">
+        <Field label={translate("Tên khoản chi")}>
           <Input
             name="title"
             defaultValue={value?.title}
-            placeholder="Ví dụ: Ăn tối"
+            placeholder={translate("Ví dụ: Ăn tối")}
             required
             maxLength={200}
           />
         </Field>
-        <Field label="Số tiền (₫)">
-          <MoneyInput value={amount} onValueChange={setAmount} required aria-label="Số tiền" />
+        <Field label={translate("Số tiền (₫)")}>
+          <MoneyInput value={amount} onValueChange={setAmount} required aria-label={translate("Số tiền")} />
         </Field>
         <div className={s.grid2}>
-          <DateInput label="Ngày" name="date" defaultValue={value?.date || today()} required />
-          <Field label="Người trả tiền">
-            <MemberSelect g={g} value={payer} onChange={setPayer} label="Người trả tiền" />
+          <DateInput label={translate("Ngày")} name="date" defaultValue={value?.date || today()} required />
+          <Field label={translate("Người trả tiền")}>
+            <MemberSelect g={g} value={payer} onChange={setPayer} label={translate("Người trả tiền")} />
           </Field>
         </div>
         <details className={s.splitPicker}>
           <summary className={s.splitSummary}>
             <strong>Chia cho</strong>
-            <span>{ids.length} người đã chọn</span>
+            <span>{ids.length} {translate("người đã chọn")}</span>
             <ChevronDownIcon />
           </summary>
           <div className={s.splitList}>
@@ -98,7 +99,7 @@ export default function ExpenseForm({
                 checked={ids.length === g.members.length}
                 onChange={(e) => setIds(e.target.checked ? g.members.map((m) => m.id) : [])}
               />
-              Tất cả thành viên
+              {translate("Tất cả thành viên")}
             </label>
             {g.members.map((m) => (
               <label className={s.splitRow} key={m.id}>
@@ -118,10 +119,10 @@ export default function ExpenseForm({
         </details>
         <p className={s.notice}>
           {ids.length
-            ? `Chia đều · khoảng ${money(Math.floor(amount / ids.length))} / người`
-            : 'Chọn ít nhất một người cùng chia.'}
+            ? `${translate("Chia đều · khoảng")} ${money(Math.floor(amount / ids.length))} ${translate("/ người")}`
+            : translate("Chọn ít nhất một người cùng chia.")}
         </p>
-        <Field label="Ghi chú (không bắt buộc)">
+        <Field label={translate("Ghi chú (không bắt buộc)")}>
           <Input name="note" defaultValue={value?.note} maxLength={1000} />
         </Field>
       </Form>

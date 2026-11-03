@@ -1,3 +1,4 @@
+import { t as translate } from '../i18n/language';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigation } from './useNavigation';
 import { api, type Viewer, type Dashboard, type Team, type ActivityEvent } from '../../api';
@@ -41,7 +42,7 @@ export function useTingting() {
     setTeamsError('');
     setError(
       new URLSearchParams(location.search).has('auth_error')
-        ? 'Chưa thể đăng nhập Google. Vui lòng thử lại.'
+        ? translate("Chưa thể đăng nhập Google. Vui lòng thử lại.")
         : '',
     );
     try {
@@ -75,7 +76,7 @@ export function useTingting() {
           ]);
           if (request !== loadRequest.current) return;
           if (teamsResult.status === 'fulfilled') setTeams(teamsResult.value);
-          else setTeamsError('Không thể tải hội nhóm. Vui lòng thử lại.');
+          else setTeamsError(translate("Không thể tải hội nhóm. Vui lòng thử lại."));
           if (groupsResult.status === 'fulfilled') setGroups(groupsResult.value);
           if (dashboardResult.status === 'fulfilled') setDashboard(dashboardResult.value);
           if (groupsResult.status === 'rejected') throw groupsResult.reason;
@@ -133,7 +134,7 @@ export function useTingting() {
       setG(x);
       setActivityEvents(await api.activity(x.token).catch(() => []));
       setModal(null);
-      notify('Đã lưu thay đổi');
+      notify(translate("Đã lưu thay đổi"));
       if (x.token !== g.token) {
         if (identity) localStorage.setItem(`tingting:identity:${x.id}`, identity);
         navigate('/g/' + x.token);
@@ -152,9 +153,9 @@ export function useTingting() {
   const copy = async (t: string) => {
     try {
       await navigator.clipboard.writeText(location.origin + '/g/' + t);
-      notify('Đã sao chép liên kết');
+      notify(translate("Đã sao chép liên kết"));
     } catch {
-      notify('Không thể sao chép. Hãy sao chép URL trên trình duyệt.');
+      notify(translate("Không thể sao chép. Hãy sao chép URL trên trình duyệt."));
     }
   };
   const allDebts: Debt[] = g ? (simplified ? g.simplifiedDebts : g.directDebts) : [],
@@ -193,7 +194,7 @@ export function useTingting() {
       setGroups((previous) => [created, ...previous]);
       setModal(null);
       await load();
-      notify('Đã tạo sổ chi tiêu. Bạn có thể sao chép liên kết.');
+      notify(translate("Đã tạo sổ chi tiêu. Bạn có thể sao chép liên kết."));
     } catch (error) {
       setError(err(error));
     } finally {
@@ -220,7 +221,7 @@ export function useTingting() {
         : await api.createTeam(name, members);
       setTeams((current) => [saved, ...current.filter((team) => team.id !== saved.id)]);
       closeTeamEditor();
-      notify(teamToEdit ? 'Đã cập nhật hội nhóm' : 'Đã tạo hội nhóm');
+      notify(teamToEdit ? translate("Đã cập nhật hội nhóm") : translate("Đã tạo hội nhóm"));
     } catch (error) {
       setTeamEditorError(err(error));
     } finally {
@@ -235,7 +236,7 @@ export function useTingting() {
       await api.deleteTeam(teamToEdit.id, teamToEdit.version);
       setTeams((current) => current.filter((team) => team.id !== teamToEdit.id));
       closeTeamEditor();
-      notify('Đã xóa hội nhóm');
+      notify(translate("Đã xóa hội nhóm"));
     } catch (error) {
       setTeamEditorError(err(error));
     } finally {

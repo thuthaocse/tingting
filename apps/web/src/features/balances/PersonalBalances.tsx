@@ -1,3 +1,4 @@
+import { t as translate } from '../../app/i18n/language';
 import { Button, ChevronDownIcon } from '@tingting/design-system';
 import type { Debt, Group } from '../../types';
 import { money } from '../../domain.mjs';
@@ -31,7 +32,7 @@ export default function PersonalBalances({
         />
       )}
       {!outgoing.length && !incoming.length && (
-        <p className={s.settled}>{group.expenses.length ? '✓ Bạn đã thanh toán hết. Nhẹ lòng rồi!' : '✓ Không có khoản nợ.'}</p>
+        <p className={s.settled}>{group.expenses.length ? translate("✓ Bạn đã thanh toán hết. Nhẹ lòng rồi!") : translate("✓ Không có khoản nợ.")}</p>
       )}
     </div>
   );
@@ -52,10 +53,10 @@ function BalanceSection({
   return (
     <details className={s.balanceSection}>
       <summary className={receive ? s.receive : s.pay}>
-        <span className={s.summaryLabel}>{receive ? 'Bạn được nhận' : 'Bạn cần trả'}</span>
+        <span className={s.summaryLabel}>{receive ? translate("Bạn được nhận") : translate("Bạn cần trả")}</span>
         <span className={s.summaryMeta}>
           <strong>{money(items.reduce((total, debt) => total + debt.amount, 0))}</strong>
-          <span className={s.count}>{items.length} người</span>
+          <span className={s.count}>{items.length} {translate("người")}</span>
           <span className={s.chevron}>
             <ChevronDownIcon />
           </span>
@@ -67,7 +68,7 @@ function BalanceSection({
           <strong>{money(d.amount)}</strong>
           {!readOnly && (
             <Button variant="quiet" small onClick={() => onRecord(d)}>
-              Thanh toán
+              {translate("Thanh toán")}
             </Button>
           )}
         </div>

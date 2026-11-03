@@ -2,9 +2,9 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  height: var(--app-header-height);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  min-height: var(--app-header-height);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-header);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -31,7 +31,7 @@
 .logoutLabel {
   display: none;
 }
-@media (max-width: 640px) {
+@media (max-width: 1024px), (max-width: 1366px) and (pointer: coarse) {
   .menuPanel .themeLabel,
   .logoutLabel {
     display: inline;
@@ -68,7 +68,7 @@
 .mobileMenu {
   display: none;
 }
-@media (max-width: 640px) {
+@media (max-width: 1024px), (max-width: 1366px) and (pointer: coarse) {
   .topbar {
     padding: var(--space-3) var(--space-4);
     gap: var(--space-3);
@@ -81,7 +81,7 @@
     display: block;
     position: relative;
   }
-  .mobileMenu summary {
+  .mobileMenu > summary {
     list-style: none;
     display: grid;
     place-items: center;
@@ -92,14 +92,14 @@
     border-radius: var(--radius-sm);
     cursor: pointer;
   }
-  .mobileMenu summary::-webkit-details-marker {
+  .mobileMenu > summary::-webkit-details-marker {
     display: none;
   }
-  .mobileMenu summary:focus-visible {
+  .mobileMenu > summary:focus-visible {
     outline: 2px solid var(--color-action);
     outline-offset: 2px;
   }
-  .mobileMenu[open] summary {
+  .mobileMenu[open] > summary {
     background: var(--color-soft);
     color: var(--color-action);
   }

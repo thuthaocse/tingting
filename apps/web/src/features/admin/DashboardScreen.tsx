@@ -1,3 +1,4 @@
+import { t as translate } from '../../app/i18n/language';
 import { Button, Input } from '@tingting/design-system';
 import type { TingtingModel } from '../../app/hooks/useTingting';
 import { money } from '../../domain.mjs';
@@ -13,10 +14,10 @@ export default function DashboardScreen({ model }: { model: TingtingModel }) {
     <main className={s.page}>
       <div className={s.heading}>
         <div>
-          <p className={s.eyebrow}>CHÀO {viewer?.name}</p>
-          <h1>Sổ chi tiêu</h1>
+          <p className={s.eyebrow}>{translate("CHÀO")} {viewer?.name}</p>
+          <h1>{translate("Sổ chi tiêu")}</h1>
         </div>
-        {model.canCreate && <Button onClick={() => setModal('create')}>+ Tạo sổ chi tiêu</Button>}
+        {model.canCreate && <Button onClick={() => setModal('create')}>{translate("+ Tạo sổ chi tiêu")}</Button>}
       </div>
       {error && (
         <p role="alert" className={s.error}>
@@ -24,24 +25,24 @@ export default function DashboardScreen({ model }: { model: TingtingModel }) {
         </p>
       )}
       {dashboard && (
-        <section className={s.account} aria-label="Tổng khoản nợ của bạn">
+        <section className={s.account} aria-label={translate("Tổng khoản nợ của bạn")}>
           <AccountSummary
-            label="Bạn cần trả"
+            label={translate("Bạn cần trả")}
             total={dashboard.payable}
             items={dashboard.outgoing}
           />
           <AccountSummary
-            label="Bạn được nhận"
+            label={translate("Bạn được nhận")}
             total={dashboard.receivable}
             items={dashboard.incoming}
             receive
           />
         </section>
       )}
-      <p className={s.muted}>Tổng từ các sổ bạn tham gia · Theo email {viewer?.email}</p>
+      <p className={s.muted}>{translate("Tổng từ các sổ bạn tham gia · Theo email")} {viewer?.email}</p>
       <Input
-        aria-label="Tìm sổ"
-        placeholder="Tìm kiếm sổ…"
+        aria-label={translate("Tìm sổ")}
+        placeholder={translate("Tìm kiếm sổ…")}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
@@ -56,7 +57,7 @@ export default function DashboardScreen({ model }: { model: TingtingModel }) {
                 <span aria-hidden="true">↗</span>
               </a>
               <p className={s.muted}>
-                {group.members.length} thành viên
+                {group.members.length} {translate("thành viên")}
               </p>
               {summary?.memberId && (
                 <>
@@ -64,12 +65,12 @@ export default function DashboardScreen({ model }: { model: TingtingModel }) {
                     <div className={s.groupAmounts}>
                       {summary.payable > 0 && (
                         <span>
-                          Cần trả <b>{money(summary.payable)}</b>
+                          {translate("Cần trả")} <b>{money(summary.payable)}</b>
                         </span>
                       )}
                       {summary.receivable > 0 && (
                         <span>
-                          Được nhận <b>{money(summary.receivable)}</b>
+                          {translate("Được nhận")} <b>{money(summary.receivable)}</b>
                         </span>
                       )}
                     </div>
@@ -81,7 +82,7 @@ export default function DashboardScreen({ model }: { model: TingtingModel }) {
                           .slice(0, 2)
                           .map((x) => x.personName)
                           .join(', ')}
-                        {owedBy.length > 2 ? ` và ${owedBy.length - 2} người` : ''} nợ bạn
+                        {owedBy.length > 2 ? ` ${translate("và")} ${owedBy.length - 2} ${translate("người")}` : ''} {translate("nợ bạn")}
                       </summary>
                       {owedBy.map((x) => (
                         <div className={s.personDebt} key={x.personId}>
@@ -99,7 +100,7 @@ export default function DashboardScreen({ model }: { model: TingtingModel }) {
       </div>
       {!filtered.length && (
         <EmptyState>
-          <p>{groups.length ? 'Không tìm thấy sổ phù hợp.' : 'Chưa có sổ nào.'}</p>
+          <p>{groups.length ? translate("Không tìm thấy sổ phù hợp.") : translate("Chưa có sổ nào.")}</p>
         </EmptyState>
       )}
     </main>

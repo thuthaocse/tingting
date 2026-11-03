@@ -1,3 +1,4 @@
+import { t as translate } from '../../app/i18n/language';
 import { Button } from '@tingting/design-system';
 import EmptyState from '../../shared/empty-state/EmptyState';
 import { activityEntries } from './utils/activity.mjs';
@@ -29,8 +30,8 @@ export default function Activity({
     <>
       {!g.expenses.length && (
         <EmptyState>
-          <p>Chưa có khoản chi nào. Thêm khoản chi đầu tiên nhé!</p>
-          {addExpense && <Button onClick={addExpense}>Thêm khoản chi</Button>}
+          <p>{translate("Chưa có khoản chi nào. Thêm khoản chi đầu tiên nhé!")}</p>
+          {addExpense && <Button onClick={addExpense}>{translate("Thêm khoản chi")}</Button>}
         </EmptyState>
       )}
       {entries.map((row, i) => {
@@ -64,12 +65,12 @@ export default function Activity({
                   <strong>
                     {expense
                       ? expense.title
-                      : `${name(g, settlement!.fromId)} đã trả ${name(g, settlement!.toId)}`}
+                      : `${name(g, settlement!.fromId)} ${translate("đã trả")} ${name(g, settlement!.toId)}`}
                   </strong>
                   <p>
                     {expense
-                      ? `${name(g, expense.payerId)} đã trả ${money(expense.amount)}`
-                      : settlement?.note || 'Thanh toán nợ'}
+                      ? `${name(g, expense.payerId)} ${translate("đã trả")} ${money(expense.amount)}`
+                      : settlement?.note || translate("Thanh toán nợ")}
                   </p>
                 </div>
                 <div className={`${s.activityAmount} ${receivable ? s.receive : share ? s.pay : ''}`}>
@@ -77,21 +78,21 @@ export default function Activity({
                     <>
                       {!identity ? (
                         <>
-                          <span>Tổng khoản chi</span>
+                          <span>{translate("Tổng khoản chi")}</span>
                           <strong>{money(expense.amount)}</strong>
                         </>
                       ) : receivable ? (
                         <>
-                          <span>Bạn được nhận</span>
+                          <span>{translate("Bạn được nhận")}</span>
                           <strong>{money(receivable)}</strong>
                         </>
                       ) : share ? (
                         <>
-                          <span>Phần của bạn</span>
+                          <span>{translate("Phần của bạn")}</span>
                           <strong>{money(share)}</strong>
                         </>
                       ) : (
-                        <span>Không tham gia</span>
+                        <span>{translate("Không tham gia")}</span>
                       )}
                     </>
                   ) : (

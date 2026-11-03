@@ -2,6 +2,7 @@
   --page-width: 1060px;
   --app-header-height: 84px;
   --shadow-popover: 0 8px 24px #29233818, 0 2px 6px #2923380a;
+  --shadow-header: 0 2px 8px #29233818;
   --color-on-action: #fff;
   --color-danger-border: #f6cbd0;
   --color-overlay: #21183365;
@@ -48,8 +49,8 @@
   --color-action-hover: #e3d8ff;
   --color-action-bg: #6941c6;
   --color-action-bg-hover: #5630ad;
-  --color-bg: #303136;
-  --color-surface: #504b5a;
+  --color-bg: #18191b;
+  --color-surface: #1c1c1c;
   --color-ink: #ffffff;
   --color-muted: #eeeaf2;
   --color-border: #77717f;
@@ -61,6 +62,7 @@
   --color-danger-border: #ac727b;
   --color-overlay: #121116a6;
   --shadow-popover: 0 8px 24px #00000059;
+  --shadow-header: 0 2px 8px #00000059;
   --shadow-floating: 0 8px 28px #00000066;
   --shadow-card: 0 4px 24px #00000024;
   --shadow-dialog: 0 24px 80px #00000070;

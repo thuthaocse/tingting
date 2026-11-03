@@ -1,3 +1,4 @@
+import { t as translate } from '../../app/i18n/language';
 import { useState } from 'react';
 import { Avatar, Button, Input } from '@tingting/design-system';
 import type { Group } from '../../types';
@@ -21,12 +22,12 @@ export default function IdentityPicker({
       }}
     >
       <Input
-        placeholder="Tìm tên của bạn…"
-        aria-label="Tìm tên của bạn"
+        placeholder={translate("Tìm tên của bạn…")}
+        aria-label={translate("Tìm tên của bạn")}
         value={q}
         onChange={(e) => setQ(e.target.value)}
       />
-      <div className={s.memberList} role="radiogroup" aria-label="Chọn tên của bạn">
+      <div className={s.memberList} role="radiogroup" aria-label={translate("Chọn tên của bạn")}>
         {g.members
           .filter((m) => m.name.toLowerCase().includes(q.toLowerCase()))
           .map((m) => (
@@ -42,7 +43,7 @@ export default function IdentityPicker({
             </label>
           ))}
       </div>
-      <Button disabled={!id}>Tiếp tục →</Button>
+      <Button disabled={!id}>{translate("Tiếp tục →")}</Button>
     </Form>
   );
 }

@@ -1,3 +1,4 @@
+import { t as translate } from '../../app/i18n/language';
 import { Badge } from '@tingting/design-system';
 import type { Group } from '../../types';
 import IdentityPicker from './IdentityPicker';
@@ -12,12 +13,12 @@ export default function JoinScreen({ model, g }: { model: TingtingModel; g: Grou
           <span className={s.groupName} title={g.name}>
             {g.name}
           </span>
-          <Badge>{g.members.length} thành viên</Badge>
+          <Badge>{g.members.length} {translate("thành viên")}</Badge>
         </div>
-        <h1>Bạn là ai?</h1>
-        <p className={s.muted}>Chọn tên từ danh sách quản trị viên đã tạo.</p>
+        <h1>{translate("Bạn là ai?")}</h1>
+        <p className={s.muted}>{translate("Chọn tên từ danh sách quản trị viên đã tạo.")}</p>
         <IdentityPicker g={g} onChoose={choose} />
-        <p className={s.footer}>Không thấy tên của bạn? Liên hệ quản trị viên.</p>
+        <p className={s.footer}>{translate("Không thấy tên của bạn? Liên hệ quản trị viên.")}</p>
       </div>
     </main>
   );

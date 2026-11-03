@@ -1,5 +1,7 @@
+import { t as translate } from '../../app/i18n/language';
 import { Badge, Button, Logo } from '@tingting/design-system';
 import type { TingtingModel } from '../../app/hooks/useTingting';
+import LanguageSelect from '../../app/components/LanguageSelect';
 import s from './LoginScreen.module.css';
 export default function LoginScreen({ model }: { model: TingtingModel }) {
   return (
@@ -8,10 +10,11 @@ export default function LoginScreen({ model }: { model: TingtingModel }) {
         <div className={s.brand}>
           <Logo />
         </div>
-        <Badge>CHIA SẺ CHI TIÊU</Badge>
-        <h1>Nhẹ tiền, nhẹ lòng.</h1>
+        <LanguageSelect align="start" />
+        <Badge>{translate("CHIA SẺ CHI TIÊU")}</Badge>
+        <h1>{translate("Nhẹ tiền, nhẹ lòng.")}</h1>
         <p className={s.muted}>
-          Đăng nhập để xem các sổ chi tiêu, theo dõi khoản nợ và ghi lại chi tiêu cùng nhau.
+          {translate("Đăng nhập để xem các sổ chi tiêu, theo dõi khoản nợ và ghi lại chi tiêu cùng nhau.")}
         </p>
         {model.error && (
           <p role="alert" className={s.error}>
@@ -19,10 +22,10 @@ export default function LoginScreen({ model }: { model: TingtingModel }) {
           </p>
         )}
         <Button className={s.loginButton} disabled={!model.googleEnabled} onClick={model.login}>
-          Đăng nhập bằng Google
+          {translate("Đăng nhập bằng Google")}
         </Button>
-        {!model.googleEnabled && <p className={s.muted}>Đang chờ cấu hình đăng nhập Google.</p>}
-        <p className={s.footer}>Đã có liên kết sổ? Bạn vẫn có thể mở để xem.</p>
+        {!model.googleEnabled && <p className={s.muted}>{translate("Đang chờ cấu hình đăng nhập Google.")}</p>}
+        <p className={s.footer}>{translate("Đã có liên kết sổ? Bạn vẫn có thể mở để xem.")}</p>
       </div>
     </main>
   );

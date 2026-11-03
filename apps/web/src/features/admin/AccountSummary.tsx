@@ -1,3 +1,4 @@
+import { t as translate } from '../../app/i18n/language';
 import { ChevronDownIcon } from '@tingting/design-system';
 import EmptyState from '../../shared/empty-state/EmptyState';
 import type { AccountDebt } from '../../api';
@@ -31,7 +32,7 @@ export default function AccountSummary({
             <strong>{money(item.amount)}</strong>
           </a>
         ))}
-        {!items.length && <EmptyState compact><p>Không có khoản nào.</p></EmptyState>}
+        {!items.length && <EmptyState compact><p>{translate("Không có khoản nào.")}</p></EmptyState>}
       </div>
     </details>
   );

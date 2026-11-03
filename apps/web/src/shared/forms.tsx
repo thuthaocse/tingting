@@ -1,11 +1,12 @@
+import { t as translate } from '../app/i18n/language';
 import type { FormEvent, ReactNode } from 'react';
 import type { Group } from '../types';
 import MemberPicker from './MemberPicker';
 import s from './forms.module.css';
 export const name = (g: Group, id: string) =>
-  g.members.find((m) => m.id === id)?.name || 'Thành viên';
+  g.members.find((m) => m.id === id)?.name || translate("Thành viên");
 export const short = (g: Group, id: string) => name(g, id).split(' ')[0];
-export const err = (e: unknown) => (e instanceof Error ? e.message : 'Có lỗi xảy ra');
+export const err = (e: unknown) => (e instanceof Error ? translate(e.message) : translate("Có lỗi xảy ra"));
 export function Form({
   onSubmit,
   children,
@@ -28,7 +29,7 @@ export function MemberSelect({
   value,
   onChange,
   exclude,
-  label = 'Chọn thành viên',
+  label = translate("Chọn thành viên"),
 }: {
   g: Group;
   value: string;

@@ -1,3 +1,4 @@
+import { t as translate } from './app/i18n/language';
 import { Button, LoadingIndicator } from '@tingting/design-system';
 import { useTingting, type TingtingModel } from './app/hooks/useTingting';
 import LoginScreen from './features/admin/LoginScreen';
@@ -9,8 +10,10 @@ import DesignPreview from './features/design-preview/DesignPreview';
 import AppHeader from './app/components/AppHeader';
 import AccessManager from './features/admin/AccessManager';
 import TeamsScreen from './features/teams/TeamsScreen';
+import { useLanguage } from './app/i18n/language';
 import s from './App.module.css';
 export default function App() {
+  useLanguage();
   const model = useTingting();
   if (model.preview) return <DesignPreview />;
   return (
@@ -48,9 +51,9 @@ function CurrentScreen({ model }: { model: TingtingModel }) {
     return (
       <main className={s.page}>
         <p role="alert" className={s.error}>
-          {model.error || 'Không tìm thấy sổ chi tiêu'}
+          {model.error || translate("Không tìm thấy sổ chi tiêu")}
         </p>
-        <Button onClick={() => void model.load()}>Thử lại</Button>
+        <Button onClick={() => void model.load()}>{translate("Thử lại")}</Button>
       </main>
     );
   return model.viewer || model.identity ? (

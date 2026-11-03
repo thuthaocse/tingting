@@ -1,3 +1,4 @@
+import { t as translate } from '../../app/i18n/language';
 import { useState } from 'react';
 import { Avatar, SearchSelect } from '@tingting/design-system';
 import { money } from '../../domain.mjs';
@@ -9,40 +10,40 @@ export default function Totals({ g }: { g: Group }) {
   return (
     <>
       <div className={s.contentHeader}>
-        <h2>Tổng chi</h2>
+        <h2>{translate("Tổng chi")}</h2>
         <SearchSelect
-          label="Lọc theo tháng"
+          label={translate("Lọc theo tháng")}
           value={month || 'all'}
           onChange={(value) => setMonth(value === 'all' ? '' : value)}
-          placeholder="Tất cả thời gian"
-          searchPlaceholder="Tìm tháng…"
+          placeholder={translate("Tất cả thời gian")}
+          searchPlaceholder={translate("Tìm tháng…")}
           options={[
-            { id: 'all', label: 'Tất cả thời gian' },
+            { id: 'all', label: translate("Tất cả thời gian") },
             ...Array.from(new Set(g.expenses.map((expense) => expense.date.slice(0, 7))))
               .sort()
               .reverse()
               .map((value) => ({
                 id: value,
-                label: `Tháng ${Number(value.slice(5))}/${value.slice(0, 4)}`,
+                label: `${translate("Tháng")} ${Number(value.slice(5))}/${value.slice(0, 4)}`,
               })),
           ]}
         />
       </div>
       <div className={s.stat}>
-        <span className={s.muted}>Tổng chi của sổ</span>
+        <span className={s.muted}>{translate("Tổng chi của sổ")}</span>
         <strong>{money(expenses.reduce((v, e) => v + e.amount, 0))}</strong>
         <span className={s.muted}>
-          {expenses.length} khoản chi · {g.members.length} thành viên
+          {expenses.length} {translate("khoản chi")} · {g.members.length} {translate("thành viên")}
         </span>
       </div>
-      <h3>Theo thành viên</h3>
+      <h3>{translate("Theo thành viên")}</h3>
       <div className={s.tableWrap}>
         <table className={s.table}>
           <thead>
             <tr>
-              <th>Thành viên</th>
-              <th>Đã trả</th>
-              <th>Phần chia</th>
+              <th>{translate("Thành viên")}</th>
+              <th>{translate("Đã trả")}</th>
+              <th>{translate("Phần chia")}</th>
             </tr>
           </thead>
           <tbody>
@@ -72,7 +73,7 @@ export default function Totals({ g }: { g: Group }) {
           </tbody>
         </table>
       </div>
-      <p className={s.footer}>Tổng chi không bao gồm các khoản thanh toán nợ.</p>
+      <p className={s.footer}>{translate("Tổng chi không bao gồm các khoản thanh toán nợ.")}</p>
     </>
   );
 }

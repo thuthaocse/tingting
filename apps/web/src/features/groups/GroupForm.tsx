@@ -1,3 +1,4 @@
+import { t as translate } from '../../app/i18n/language';
 import { useState } from 'react';
 import { Button, Field, Input } from '@tingting/design-system';
 import type { Group, Member } from '../../types';
@@ -57,33 +58,33 @@ export default function GroupForm({
         });
       }}
     >
-      <Field label="Tên sổ chi tiêu">
+      <Field label={translate("Tên sổ chi tiêu")}>
         <Input
           name="name"
           defaultValue={value?.name}
-          placeholder="Ví dụ: Đà Lạt cuối tuần"
+          placeholder={translate("Ví dụ: Đà Lạt cuối tuần")}
           maxLength={120}
           required
         />
       </Field>
-      <Field label="Mô tả (không bắt buộc)">
+      <Field label={translate("Mô tả (không bắt buộc)")}>
         <Input name="description" defaultValue={value?.description} maxLength={500} />
       </Field>
-      <Field label="Tiền tệ">
+      <Field label={translate("Tiền tệ")}>
         <select className={s.select} disabled>
-          <option>VND — Việt Nam đồng</option>
+          <option>{translate("VND — Việt Nam đồng")}</option>
         </select>
       </Field>
       <div className={s.formTitle}>
-        <h3>Thành viên</h3>
-        <span className={s.muted}>{members.length} người</span>
+        <h3>{translate("Thành viên")}</h3>
+        <span className={s.muted}>{members.length} {translate("người")}</span>
       </div>
       {teams.length > 0 && (
         <div className={s.teamPicker}>
-          <Field label="Thêm từ hội nhóm">
+          <Field label={translate("Thêm từ hội nhóm")}>
             <Input
-              aria-label="Tìm hội nhóm hoặc thành viên"
-              placeholder="Tìm theo tên hội nhóm hoặc thành viên…"
+              aria-label={translate("Tìm hội nhóm hoặc thành viên")}
+              placeholder={translate("Tìm theo tên hội nhóm hoặc thành viên…")}
               value={teamSearch}
               onChange={(event) => setTeamSearch(event.target.value)}
             />
@@ -101,7 +102,7 @@ export default function GroupForm({
                 <details key={team.id} className={s.teamOption}>
                   <summary>
                     <span>{team.name}</span>
-                    <small>{team.members.length} thành viên</small>
+                    <small>{team.members.length} {translate("thành viên")}</small>
                   </summary>
                   <div className={s.teamMembers}>
                     {!searchKey || teamMatchesSearch ? (
@@ -110,7 +111,7 @@ export default function GroupForm({
                         className={s.addTeamButton}
                         onClick={() => setMembers((current) => addMembers(current, visibleMembers))}
                       >
-                        + Thêm cả hội nhóm
+                        {translate("+ Thêm cả hội nhóm")}
                       </button>
                     ) : null}
                     {visibleMembers.map((member) => {
@@ -123,7 +124,7 @@ export default function GroupForm({
                           disabled={alreadyAdded}
                           onClick={() => setMembers((current) => addMembers(current, [member]))}
                         >
-                          <span>{member.name}{alreadyAdded ? ' · Đã thêm' : ''}</span>
+                          <span>{member.name}{alreadyAdded ? translate(" · Đã thêm") : ''}</span>
                           {member.email && <small>{member.email}</small>}
                           {!alreadyAdded && <span className={s.addMemberIcon}>+</span>}
                         </button>
@@ -134,7 +135,7 @@ export default function GroupForm({
               );
             })}
             {!matchingTeams.length && (
-              <p className={s.noTeamResults}>Không tìm thấy hội nhóm hoặc thành viên.</p>
+              <p className={s.noTeamResults}>{translate("Không tìm thấy hội nhóm hoặc thành viên.")}</p>
             )}
           </div>
         </div>
@@ -142,8 +143,8 @@ export default function GroupForm({
       {members.map((m, i) => (
         <div key={m.id} className={s.memberEdit}>
           <Input
-            aria-label={`Tên thành viên ${i + 1}`}
-            placeholder="Họ và tên"
+            aria-label={`${translate("Tên thành viên")} ${i + 1}`}
+            placeholder={translate("Họ và tên")}
             required
             maxLength={100}
             value={m.name}
@@ -152,9 +153,9 @@ export default function GroupForm({
             }
           />
           <Input
-            aria-label={`Email thành viên ${i + 1}`}
+            aria-label={`${translate("Email thành viên")} ${i + 1}`}
             type="email"
-            placeholder="Email (tùy chọn)"
+            placeholder={translate("Email (tùy chọn)")}
             value={m.email || ''}
             onChange={(e) =>
               setMembers(members.map((x) => (x.id === m.id ? { ...x, email: e.target.value } : x)))
@@ -163,7 +164,7 @@ export default function GroupForm({
           <Button
             type="button"
             variant="quiet"
-            aria-label={`Xóa ${m.name || 'thành viên'}`}
+            aria-label={`${translate("Xóa")} ${m.name || translate("thành viên")}`}
             disabled={members.length === 1}
             onClick={() => setMembers(members.filter((x) => x.id !== m.id))}
           >
@@ -176,12 +177,12 @@ export default function GroupForm({
         variant="secondary"
         onClick={() => setMembers([...members, { id: crypto.randomUUID(), name: '', email: '' }])}
       >
-        + Thêm thành viên
+        {translate("+ Thêm thành viên")}
       </Button>
-      <small>Thành viên sẽ chọn tên khi mở liên kết sổ.</small>
+      <small>{translate("Thành viên sẽ chọn tên khi mở liên kết sổ.")}</small>
       {!formId && (
         <Button loading={busy} disabled={busy}>
-          {busy ? 'Đang lưu…' : value ? 'Lưu thay đổi' : 'Tạo sổ chi tiêu & lấy liên kết'}
+          {busy ? translate("Đang lưu…") : value ? translate("Lưu thay đổi") : translate("Tạo sổ chi tiêu & lấy liên kết")}
         </Button>
       )}
     </Form>

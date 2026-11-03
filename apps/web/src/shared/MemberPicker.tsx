@@ -1,3 +1,4 @@
+import { t as translate } from '../app/i18n/language';
 import { Button, ChevronDownIcon, Input, Modal, SearchSelect, searchKey } from '@tingting/design-system';
 import { createPortal } from 'react-dom';
 import { useIsMobileViewport, useMemberPicker } from './hooks/useMemberPicker';
@@ -15,7 +16,7 @@ export default function MemberPicker(props: MemberPickerProps) {
   return isMobile ? (
     <MemberDrawer {...props} />
   ) : (
-    <SearchSelect {...props} placeholder="Chọn thành viên" searchPlaceholder="Tìm theo tên…" />
+    <SearchSelect {...props} placeholder={translate("Chọn thành viên")} searchPlaceholder={translate("Tìm theo tên…")} />
   );
 }
 
@@ -35,15 +36,15 @@ function MemberDrawer({ options, value, label, onChange }: MemberPickerProps) {
         aria-expanded={picker.isOpen}
         onClick={picker.open}
       >
-        <span>{selected?.label || 'Chọn thành viên'}</span>
+        <span>{selected?.label || translate("Chọn thành viên")}</span>
         <ChevronDownIcon />
       </Button>
       {picker.isOpen && createPortal(
         <Modal title={label} onClose={picker.close} style={picker.viewport}>
           <Input
             type="search"
-            aria-label="Tìm theo tên"
-            placeholder="Tìm theo tên…"
+            aria-label={translate("Tìm theo tên")}
+            placeholder={translate("Tìm theo tên…")}
             value={picker.search}
             onChange={(event) => picker.setSearch(event.target.value)}
           />
@@ -66,7 +67,7 @@ function MemberDrawer({ options, value, label, onChange }: MemberPickerProps) {
               </li>
             ))}
           </ul>
-          {!visibleOptions.length && <p role="status">Không tìm thấy thành viên.</p>}
+          {!visibleOptions.length && <p role="status">{translate("Không tìm thấy thành viên.")}</p>}
         </Modal>,
         document.body,
       )}

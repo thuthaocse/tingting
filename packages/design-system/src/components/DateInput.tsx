@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { Field, Input } from '../index';
 import s from './DateInput.module.css';
 
-const vietnameseDate = new Intl.DateTimeFormat('vi-VN', {
+function formatDate(date: Date, language: string) {
+  return new Intl.DateTimeFormat(language === 'en' ? 'en-GB' : 'vi-VN', {
   day: 'numeric',
   month: 'long',
   year: 'numeric',
   timeZone: 'UTC',
-});
+  }).format(date).replace(/^ngày\s+/u, '');
+}
 
 export function DateInput({
   label,
@@ -22,9 +24,10 @@ export function DateInput({
 }) {
   const [value, setValue] = useState(defaultValue);
   const date = new Date(`${value}T00:00:00Z`);
+  const language = typeof document === 'undefined' ? 'vi' : document.documentElement.lang;
   const text = Number.isNaN(date.getTime())
-    ? 'Chọn ngày'
-    : vietnameseDate.format(date).replace(/^ngày\s+/u, '');
+    ? (language === 'en' ? 'Choose date' : 'Chọn ngày')
+    : formatDate(date, language);
 
   return (
     <Field label={label}>
@@ -32,7 +35,7 @@ export function DateInput({
         <Input
           className={s.date}
           type="date"
-          lang="vi"
+          lang={language}
           aria-label={label}
           name={name}
           value={value}

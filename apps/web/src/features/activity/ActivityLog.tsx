@@ -1,3 +1,4 @@
+import { t as translate } from '../../app/i18n/language';
 import EmptyState from '../../shared/empty-state/EmptyState';
 import type { ActivityEvent } from '../../api';
 import s from './Activity.module.css';
@@ -13,7 +14,7 @@ export default function ActivityLog({ events }: { events: ActivityEvent[] }) {
           <div className={`${s.entry} ${index === ordered.length - 1 ? s.lastActivity : ''}`} key={event.id}>
             {day !== previousDay && (
               <p className={`${s.date} ${s.logDate}`}>
-                {new Date(`${day}T12:00:00`).toLocaleDateString('vi-VN', {
+                {new Date(`${day}T12:00:00`).toLocaleDateString(typeof document !== 'undefined' && document.documentElement.lang === 'en' ? 'en-GB' : 'vi-VN', {
                   day: 'numeric', month: 'long', year: 'numeric',
                 }).replace(/^ngày\s+/u, '')}
               </p>
@@ -23,7 +24,7 @@ export default function ActivityLog({ events }: { events: ActivityEvent[] }) {
               <div className={s.activityInfo}>
                 <strong>{event.summary}</strong>
                 <p>
-                  {event.actorName} · {new Date(event.createdAt).toLocaleTimeString('vi-VN', {
+                  {event.actorName} · {new Date(event.createdAt).toLocaleTimeString(typeof document !== 'undefined' && document.documentElement.lang === 'en' ? 'en-GB' : 'vi-VN', {
                     hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Ho_Chi_Minh',
                   })}
                 </p>
@@ -32,7 +33,7 @@ export default function ActivityLog({ events }: { events: ActivityEvent[] }) {
           </div>
         );
       })}
-      {!ordered.length && <EmptyState><p>Chưa có hoạt động nào.</p></EmptyState>}
+      {!ordered.length && <EmptyState><p>{translate("Chưa có hoạt động nào.")}</p></EmptyState>}
     </>
   );
 }

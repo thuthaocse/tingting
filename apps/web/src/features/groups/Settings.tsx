@@ -1,3 +1,4 @@
+import { t as translate } from '../../app/i18n/language';
 import { Button, CopyIcon } from '@tingting/design-system';
 import type { Group } from '../../types';
 import type { Team } from '../../api';
@@ -22,7 +23,7 @@ export default function Settings({
     <div className={s.form}>
       <Button variant="secondary" small className={s.copyLink} onClick={onCopy}>
         <CopyIcon />
-        Sao chép liên kết sổ
+        {translate("Sao chép liên kết sổ")}
       </Button>
       <GroupForm formId={formId} value={g} teams={teams} busy={busy} onSave={onSave} />
     </div>

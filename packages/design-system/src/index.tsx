@@ -32,7 +32,7 @@ export function Button({
     </button>
   );
 }
-export function LoadingIndicator({ label = 'Đang tải…' }: { label?: string }) {
+export function LoadingIndicator({ label = typeof document !== 'undefined' && document.documentElement.lang === 'en' ? 'Loading…' : 'Đang tải…' }: { label?: string }) {
   return (
     <div className={s.loading} role="status">
       <span className={s.spinner} aria-hidden="true" />
@@ -74,7 +74,7 @@ export function Avatar({ name }: { name: string }) {
 }
 export function Logo() {
   return (
-    <a href="/" className={s.logo} aria-label="TingTing — Trang chủ">
+    <a href="/" className={s.logo} aria-label={typeof document !== 'undefined' && document.documentElement.lang === 'en' ? 'TingTing — Home' : 'TingTing — Trang chủ'}>
       <img src={wordmark} alt="" />
     </a>
   );
@@ -89,7 +89,7 @@ export function Tabs({
   items: { id: string; label: string }[];
 }) {
   return (
-    <nav aria-label="Nội dung sổ chi tiêu" className={s.tabs}>
+    <nav aria-label={typeof document !== 'undefined' && document.documentElement.lang === 'en' ? 'Ledger sections' : 'Nội dung sổ chi tiêu'} className={s.tabs}>
       {items.map((t) => (
         <button
           key={t.id}
@@ -153,7 +153,7 @@ export function Modal({
           <h2 id={titleId} ref={titleRef} tabIndex={-1}>
             {title}
           </h2>
-          <Button type="button" variant="quiet" className={s.closeButton} aria-label="Đóng" onClick={onClose}>
+          <Button type="button" variant="quiet" className={s.closeButton} aria-label={typeof document !== 'undefined' && document.documentElement.lang === 'en' ? 'Close' : 'Đóng'} onClick={onClose}>
             ✕
           </Button>
         </div>

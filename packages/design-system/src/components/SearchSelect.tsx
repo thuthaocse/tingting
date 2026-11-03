@@ -18,6 +18,7 @@ export function SearchSelect({
   searchPlaceholder?: string;
   className?: string;
 }) {
+  const isEnglish = typeof document !== 'undefined' && document.documentElement.lang === 'en';
   const select = useSearchSelect(options, value, onChange);
   return (
     <div ref={select.root} className={`${s.root} ${className}`}>
@@ -36,7 +37,7 @@ export function SearchSelect({
           }
           autoComplete="off"
           value={select.open ? select.query : select.selected?.label || ''}
-          placeholder={select.open ? searchPlaceholder : placeholder}
+          placeholder={select.open ? (isEnglish && searchPlaceholder === 'Tìm kiếm…' ? 'Search…' : searchPlaceholder) : (isEnglish && placeholder === 'Chọn một mục' ? 'Select an option' : placeholder)}
           onFocus={select.show}
           onClick={() => {
             if (!select.open) select.show();
@@ -78,7 +79,7 @@ export function SearchSelect({
                 )}
               </div>
             ))}
-            {!select.filtered.length && <p className={s.empty}>Không tìm thấy thành viên</p>}
+            {!select.filtered.length && <p className={s.empty}>{isEnglish ? 'No results found' : 'Không tìm thấy thành viên'}</p>}
           </div>
         </div>
       )}

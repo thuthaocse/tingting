@@ -1,3 +1,4 @@
+import { t as translate } from '../../app/i18n/language';
 import { Button, Field, Input } from '@tingting/design-system';
 import { useState } from 'react';
 import type { Team, Viewer } from '../../graphql/generated';
@@ -36,18 +37,18 @@ export default function TeamForm({
         onSave(String(data.get('name') || ''), members);
       }}
     >
-      <Field label="Tên hội nhóm">
+      <Field label={translate("Tên hội nhóm")}>
         <Input
           name="name"
           defaultValue={team?.name}
-          placeholder="Ví dụ: Gia đình"
+          placeholder={translate("Ví dụ: Gia đình")}
           maxLength={120}
           required
         />
       </Field>
       <div className={s.membersHeading}>
-        <h3>Thành viên</h3>
-        <span>{members.length} người</span>
+        <h3>{translate("Thành viên")}</h3>
+        <span>{members.length} {translate("người")}</span>
       </div>
       {members.map((member, index) => {
         const isOwner = isViewerMember(member, viewer);
@@ -55,8 +56,8 @@ export default function TeamForm({
         return (
           <div className={s.memberRow} key={member.id}>
             <Input
-              aria-label={`Tên thành viên ${index + 1}`}
-              placeholder="Họ và tên"
+              aria-label={`${translate("Tên thành viên")} ${index + 1}`}
+              placeholder={translate("Họ và tên")}
               required
               maxLength={100}
               value={member.name}
@@ -69,8 +70,8 @@ export default function TeamForm({
               }
             />
             <Input
-              aria-label={`Email thành viên ${index + 1}`}
-              placeholder="Email (không bắt buộc)"
+              aria-label={`${translate("Email thành viên")} ${index + 1}`}
+              placeholder={translate("Email (không bắt buộc)")}
               type="email"
               disabled={isOwner}
               value={member.email || ''}
@@ -85,7 +86,7 @@ export default function TeamForm({
             <Button
               type="button"
               variant="quiet"
-              aria-label={`Xóa ${member.name}`}
+              aria-label={`${translate("Xóa")} ${member.name}`}
               disabled={!canRemove}
               onClick={() => setMembers((items) => items.filter((item) => item.id !== member.id))}
             >
@@ -101,7 +102,7 @@ export default function TeamForm({
           setMembers((items) => [...items, { id: crypto.randomUUID(), name: '', email: '' }])
         }
       >
-        + Thêm thành viên
+        {translate("+ Thêm thành viên")}
       </Button>
       <div className={s.formActions}>
         <Button
@@ -111,11 +112,11 @@ export default function TeamForm({
           disabled={busy}
           onClick={onCancel}
         >
-          Hủy
+          {translate("Hủy")}
         </Button>
         {!isTeamEmpty && (
           <Button loading={busy} disabled={busy}>
-            {busy ? 'Đang lưu…' : team ? 'Lưu thay đổi' : 'Tạo hội nhóm'}
+            {busy ? translate("Đang lưu…") : team ? translate("Lưu thay đổi") : translate("Tạo hội nhóm")}
           </Button>
         )}
         {team && (
@@ -126,7 +127,7 @@ export default function TeamForm({
             disabled={busy}
             onClick={onDelete}
           >
-            Xóa hội nhóm
+            {translate("Xóa hội nhóm")}
           </Button>
         )}
       </div>
