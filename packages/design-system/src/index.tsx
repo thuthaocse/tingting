@@ -13,16 +13,31 @@ export function Button({
   variant = 'primary',
   small = false,
   className = '',
+  loading = false,
+  children,
   ...p
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'secondary' | 'quiet' | 'danger';
   small?: boolean;
+  loading?: boolean;
 }) {
   return (
     <button
       {...p}
       className={`${s.button} ${s[variant] || ''} ${small ? s.small : ''} ${className}`}
-    />
+      aria-busy={loading || undefined}
+    >
+      {loading && <span className={s.spinner} aria-hidden="true" />}
+      {children}
+    </button>
+  );
+}
+export function LoadingIndicator({ label = 'Đang tải…' }: { label?: string }) {
+  return (
+    <div className={s.loading} role="status">
+      <span className={s.spinner} aria-hidden="true" />
+      <span>{label}</span>
+    </div>
   );
 }
 export function Input({ className = '', ...props }: InputHTMLAttributes<HTMLInputElement>) {
@@ -74,7 +89,7 @@ export function Tabs({
   items: { id: string; label: string }[];
 }) {
   return (
-    <nav aria-label="Nội dung nhóm" className={s.tabs}>
+    <nav aria-label="Nội dung sổ chi tiêu" className={s.tabs}>
       {items.map((t) => (
         <button
           key={t.id}
@@ -167,6 +182,7 @@ export { searchKey } from './utils/inputs.mjs';
 export { MoneyInput } from './components/MoneyInput';
 export { SearchSelect } from './components/SearchSelect';
 export {
+  PlusIcon,
   CopyIcon,
   ChevronDownIcon,
   ShareIcon,

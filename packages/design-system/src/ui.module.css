@@ -51,7 +51,7 @@
   width: 100%;
   padding: 11px 12px;
   border: 1px solid var(--color-border);
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: var(--color-surface);
   color: var(--color-ink);
   min-height: 44px;
@@ -191,7 +191,7 @@
   max-width: 100%;
   font-size: 0.7rem;
   padding: 4px 9px;
-  border-radius: 99px;
+  border-radius: var(--radius-pill);
   background: var(--color-soft);
   color: var(--color-action);
 }
@@ -249,4 +249,31 @@
 .dialog::backdrop {
   background: var(--color-overlay);
   backdrop-filter: blur(3px);
+}
+
+.loading {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-7);
+  color: var(--color-action);
+}
+.spinner {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 1.25rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.loading .spinner {
+  width: 2rem;
+  height: 2rem;
+  border-width: 3px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation: none; }
 }
