@@ -27,7 +27,11 @@ export default function App() {
   );
 }
 function CurrentScreen({ model }: { model: TingtingModel }) {
-  if (model.loading) return <LoadingIndicator />;
+  if (model.loading) return (
+    <main className={`${s.loadingPage} ${model.viewer || model.token ? s.loadingWithHeader : ''}`}>
+      <LoadingIndicator />
+    </main>
+  );
   if (model.path === '/admin/access')
     return model.viewer && model.admin ? (
       <AccessManager onChange={model.load} />

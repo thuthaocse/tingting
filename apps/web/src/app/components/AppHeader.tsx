@@ -5,7 +5,7 @@ import s from './AppHeader.module.css';
 export default function AppHeader({ model }: { model: TingtingModel }) {
   const { menuRef, close } = useHeaderMenu();
   return (
-    <header className={s.topbar}>
+    <header className={`${s.topbar} ${model.token ? s.groupHeader : model.path === '/admin/access' && model.admin ? s.accessHeader : ''}`}>
       <div className={s.brandNavigation}>
         <Logo />
         {model.viewer && <div className={s.desktopNavigation}><Navigation model={model} /></div>}

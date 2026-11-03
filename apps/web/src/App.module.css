@@ -1,6 +1,14 @@
 .shell {
   min-height: 100dvh;
 }
+.loadingPage {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+}
+.loadingWithHeader {
+  min-height: calc(100dvh - var(--app-header-height));
+}
 .page {
   max-width: 1060px;
   margin: 0 auto;
