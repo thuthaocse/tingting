@@ -59,6 +59,14 @@ pub fn member(g: &Group, id: &str) -> Result<(), String> {
     }
     Ok(())
 }
+fn require_group_member(g: &Group, actor: &Actor) -> Result<(), String> {
+    auth::signed_in(actor)?;
+    let email = &actor.viewer.as_ref().unwrap().email;
+    if crate::dashboard::matched_member(g, email).is_none() {
+        return Err("FORBIDDEN: Tài khoản không thuộc nhóm".into());
+    }
+    Ok(())
+}
 pub async fn start(
     pool: &Store,
     token: &str,
@@ -189,6 +197,7 @@ pub async fn save_expense(
     repo::id(&input.id)?;
     validate_date(&input.date)?;
     let (mut tx, before) = start(pool, token, version).await?;
+    require_group_member(&before, actor)?;
     let mut g = before.clone();
     member(&g, &input.payer_id)?;
     for id in &input.participant_ids {
@@ -230,6 +239,7 @@ pub async fn save_settlement(
         return Err("Số tiền hoặc người nhận không hợp lệ".into());
     }
     let (mut tx, before) = start(pool, token, version).await?;
+    require_group_member(&before, actor)?;
     let mut g = before.clone();
     member(&g, &input.from_id)?;
     member(&g, &input.to_id)?;
@@ -267,6 +277,7 @@ pub async fn delete(
 ) -> Result<Group, String> {
     auth::signed_in(actor)?;
     let (tx, before) = start(pool, token, version).await?;
+    require_group_member(&before, actor)?;
     let mut g = before.clone();
     let found = if expense {
         let n = g.expenses.len();
@@ -303,6 +314,7 @@ pub async fn update(
 ) -> Result<Group, String> {
     auth::admin(actor)?;
     let (tx, before) = start(pool, token, version).await?;
+    require_group_member(&before, actor)?;
     let mut g = before.clone();
     let next = members(input.members)?;
     let used: BTreeSet<_> = g
@@ -335,9 +347,45 @@ pub async fn rotate_link(
 ) -> Result<Group, String> {
     auth::admin(actor)?;
     let (tx, before) = start(pool, token, version).await?;
+    require_group_member(&before, actor)?;
     let mut g = before.clone();
     let id = auth::group_id();
     g.id = id.clone();
     g.token = id;
     finish(tx, &before, g, "rotate_link", None, actor).await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn group_writes_require_a_unique_matching_account() {
+        let mut group: Group = serde_json::from_value(serde_json::json!({
+            "id": "group", "name": "Group", "description": "", "token": "group", "version": 1,
+            "members": [{"id": "one", "name": "One", "email": "member@example.com"}],
+            "expenses": [], "settlements": []
+        }))
+        .unwrap();
+        let mut actor = Actor::default();
+        assert!(require_group_member(&group, &actor)
+            .unwrap_err()
+            .contains("UNAUTHORIZED"));
+        actor.viewer = Some(auth::Viewer {
+            id: Uuid::new_v4().to_string(),
+            email: "other@example.com".into(),
+            name: "Other".into(),
+            is_admin: true,
+            can_create_groups: true,
+        });
+        assert!(require_group_member(&group, &actor)
+            .unwrap_err()
+            .contains("FORBIDDEN"));
+        actor.viewer.as_mut().unwrap().email = "MEMBER@example.com".into();
+        assert!(require_group_member(&group, &actor).is_ok());
+        group.members.push(group.members[0].clone());
+        assert!(require_group_member(&group, &actor)
+            .unwrap_err()
+            .contains("FORBIDDEN"));
+    }
 }

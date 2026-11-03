@@ -188,6 +188,14 @@ test('Vite renders shared design-system components and initial screens without a
     );
     assert.match(guestGroup, /Bạn là ai/);
     assert.doesNotMatch(guestGroup, />Thanh toán<\/button>/);
+    assert.doesNotMatch(guestGroup, /Chia sẻ sổ|Cài đặt sổ/);
+    const outsiderGroup = renderToString(createElement(GroupScreen, {
+      g: group,
+      model: { ...groupModel, admin: true, canEdit: false, tab: 'balances', allDebts: [debt] },
+    }));
+    assert.match(outsiderGroup, /CHỈ XEM/);
+    assert.match(outsiderGroup, /Bạn là ai/);
+    assert.doesNotMatch(outsiderGroup, /Chia sẻ sổ|Cài đặt sổ|>Thanh toán<\/button>|Thêm khoản chi/);
     const { default: Activity } = await server.ssrLoadModule('/src/features/activity/Activity.tsx');
     const settlementOnly = renderToString(createElement(Activity, {
       g: { ...group, settlements: [{ id: 's', date: '2026-11-02', fromId: 'a', toId: 'b', amount: 1000 }] },
@@ -209,7 +217,7 @@ test('Vite renders shared design-system components and initial screens without a
     assert.match(payment, /Chỉ ghi nhận khoản trả[\s\S]*Thanh toán<\/button>/);
     assert.match(payment, /Toàn bộ nợ/);
     const settings = renderToString(createElement(GroupModal, {
-      model: { g: group, modal: 'settings', admin: true, teams: [], busy: false, setModal: () => {} },
+      model: { g: group, modal: 'settings', admin: true, canEdit: true, teams: [], busy: false, setModal: () => {} },
     }));
     const formId = settings.match(/<form id="([^"]+)"/)[1];
     assert.ok(settings.includes(`form="${formId}"`));

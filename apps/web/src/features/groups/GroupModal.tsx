@@ -26,7 +26,7 @@ export default function GroupModal({ model }: { model: TingtingModel }) {
   const groupFormId = useId();
   if (!modal) return null;
   if (modal === 'create' && !model.canCreate) return null;
-  if (modal === 'settings' && !model.admin) return null;
+  if (modal === 'settings' && (!model.admin || !model.canEdit)) return null;
   if (['expense', 'settlement'].includes(modal) && !model.canEdit) return null;
   const alert = error && (
     <p className={s.error} role="alert">

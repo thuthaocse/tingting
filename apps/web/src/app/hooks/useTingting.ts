@@ -33,6 +33,7 @@ export function useTingting() {
     [settlement, setSettlement] = useState<Partial<Settlement> | undefined>(),
     [busy, setBusy] = useState(false),
     [search, setSearch] = useState('');
+  const canEdit = !!viewer && !!g?.viewerMemberId;
   const notify = (t: string) => {
     setToast(t);
     window.setTimeout(() => setToast(''), 3500);
@@ -126,7 +127,7 @@ export function useTingting() {
     }
   };
   const mutate = async (action: string, input?: unknown) => {
-    if (!g || busy || !viewer) return;
+    if (!g || busy || !canEdit) return;
     setBusy(true);
     setError('');
     try {
@@ -162,7 +163,7 @@ export function useTingting() {
     out = allDebts.filter((d) => d.fromId === identity),
     incoming = allDebts.filter((d) => d.toId === identity);
   const pay = (d: Debt) => {
-    if (!viewer) return;
+    if (!canEdit) return;
     setSettlement({ fromId: d.fromId, toId: d.toId, amount: d.amount });
     setModal('settlement');
   };
@@ -250,7 +251,7 @@ export function useTingting() {
     navigate,
     googleEnabled,
     dashboard,
-    canEdit: !!viewer,
+    canEdit,
     login,
     logout,
     createGroup,

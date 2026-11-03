@@ -67,7 +67,7 @@ test('GraphQL workflow: permissions, conservation, partial repayment, conflicts,
   const members = ['Linh Nguyễn', 'Minh Trần', 'An Phạm', 'Thảo Lê'].map((name, index) => ({
     id: memberPrefix + index,
     name,
-    email: index === 1 ? process.env.TEST_MEMBER_EMAIL : randomUUID() + '@example.com',
+    email: index === 1 ? process.env.TEST_MEMBER_EMAIL : index === 3 ? 'thuthao.cse@gmail.com' : randomUUID() + '@example.com',
   }));
   let group = result(
     await request(`mutation($input:CreateGroupInput!){createGroup(input:$input){${fields}}}`, {
@@ -325,6 +325,26 @@ test('Signed-in accounts are creators by default and admins can revoke elevated 
       }),
       'createGroup',
     );
+    cookie = process.env.TEST_ADMIN_COOKIE;
+    const outsiderExpense = {
+      id: randomUUID(), title: 'Denied', amount: 1, payerId: group.members[0].id,
+      participantIds: [group.members[0].id], date: '2026-11-02', note: '',
+    };
+    const outsiderSettlement = {
+      id: randomUUID(), fromId: group.members[0].id, toId: randomUUID(),
+      amount: 1, date: '2026-11-02', note: '',
+    };
+    for (const [action, input, type] of [
+      ['saveExpense', outsiderExpense, 'ExpenseInput'],
+      ['deleteExpense', outsiderExpense.id],
+      ['saveSettlement', outsiderSettlement, 'SettlementInput'],
+      ['deleteSettlement', outsiderSettlement.id],
+      ['updateGroup', { name: group.name, description: '', members: group.members }, 'UpdateGroupInput'],
+      ['rotateLink'],
+    ]) {
+      assert.match((await command(action, group, input, type)).errors[0].message, /FORBIDDEN/);
+    }
+    cookie = process.env.TEST_USER_COOKIE;
     assert.match((await command('rotateLink', group)).errors[0].message, /FORBIDDEN/);
     assert.match(
       (await request(grantQuery, { email, role: 'admin' })).errors[0].message,

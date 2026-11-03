@@ -47,13 +47,13 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
             </p>
           </div>
         </div>
-        <Badge>{model.viewer ? translate("SỔ CHI TIÊU") : translate("CHỈ XEM")}</Badge>
+        <Badge>{model.canEdit ? translate("SỔ CHI TIÊU") : translate("CHỈ XEM")}</Badge>
       </div>
       <div className={s.groupActions}>
-        <Button variant="secondary" small onClick={() => void model.copy(g.token)}>
+        {model.canEdit && <Button variant="secondary" small onClick={() => void model.copy(g.token)}>
           <ShareIcon /> {translate("Chia sẻ sổ")}
-        </Button>
-        {model.admin && (
+        </Button>}
+        {model.admin && model.canEdit && (
           <Button
             variant="secondary"
             small
@@ -74,11 +74,11 @@ export default function GroupScreen({ model, g }: { model: TingtingModel; g: Gro
           {error}
         </p>
       )}
-      {!model.viewer && (
+      {!model.canEdit && (
         <>
-          <p className={s.loginNotice}>
+          {!model.viewer && <p className={s.loginNotice}>
             {translate("Đăng nhập để chỉnh sửa, tạo sổ chi tiêu và quản lý chi tiêu của bạn.")}
-          </p>
+          </p>}
           <div className={s.identity}>
             <span className={s.muted}>{translate("Bạn là ai?")}</span>
             <MemberSelect g={g} value={identity} onChange={choose} label={translate("Bạn là ai?")} />
