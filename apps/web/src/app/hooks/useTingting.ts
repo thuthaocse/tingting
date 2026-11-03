@@ -1,13 +1,16 @@
 import { t as translate } from '../i18n/language';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigation } from './useNavigation';
-import { api, type Viewer, type Dashboard, type Team, type ActivityEvent } from '../../api';
+import { api, GraphqlConnectionError, type Viewer, type Dashboard, type Team, type ActivityEvent } from '../../api';
 import type { Group, Expense, Settlement, Debt } from '../../types';
 import { viewingIdentity } from '../../features/identity/utils/viewing-identity.mjs';
 import { err } from '../../shared/forms';
 export function useTingting() {
   const { path, navigate } = useNavigation();
   const loadRequest = useRef(0);
+  const loadedGroup = useRef(false);
+  const loadedHome = useRef(false);
+  const sessionViewerId = useRef<string | undefined>(undefined);
   const token = path.match(/^\/g\/([^/]+)/)?.[1];
   const preview = path === '/design-system';
   const [viewer, setViewer] = useState<Viewer | null>(null);
@@ -17,6 +20,9 @@ export function useTingting() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [teamToEdit, setTeamToEdit] = useState<Team | undefined>();
   const [teamsError, setTeamsError] = useState('');
+  const [refreshFailed, setRefreshFailed] = useState(false);
+  const [connectionFailed, setConnectionFailed] = useState(false);
+  const [connectionDetails, setConnectionDetails] = useState('');
   const [teamEditorError, setTeamEditorError] = useState('');
   const [teamModal, setTeamModal] = useState(false);
   const [g, setG] = useState<Group | null>(null),
@@ -40,6 +46,7 @@ export function useTingting() {
   };
   const load = async () => {
     const request = ++loadRequest.current;
+    setConnectionFailed(false);
     setTeamsError('');
     setError(
       new URLSearchParams(location.search).has('auth_error')
@@ -49,6 +56,16 @@ export function useTingting() {
     try {
       const session = await api.session();
       if (request !== loadRequest.current) return;
+      if (sessionViewerId.current !== session.me?.id) {
+        sessionViewerId.current = session.me?.id;
+        loadedGroup.current = false;
+        loadedHome.current = false;
+        setG(null);
+        setActivityEvents([]);
+        setGroups([]);
+        setDashboard(null);
+        setTeams([]);
+      }
       setViewer(session.me);
       setAdmin(!!session.me?.isAdmin);
       setGoogleEnabled(session.googleLoginEnabled);
@@ -61,13 +78,17 @@ export function useTingting() {
             '',
             '/g/' + x.token + location.search + location.hash,
           );
+        const activity = await api.activity(x.token).catch((error: unknown) => error);
+        if (request !== loadRequest.current) return;
         setG(x);
-        setActivityEvents(await api.activity(x.token).catch(() => []));
+        if (Array.isArray(activity)) setActivityEvents(activity);
+        loadedGroup.current = true;
         const saved =
           localStorage.getItem(`tingting:identity:${x.id}`) ||
           localStorage.getItem(`lilac:identity:${x.id}`) ||
           '';
         setIdentity(viewingIdentity(x, !!session.me, saved));
+        if (activity instanceof GraphqlConnectionError && activity.isTemporary) throw activity;
       } else {
         if (session.me) {
           const [groupsResult, dashboardResult, teamsResult] = await Promise.allSettled([
@@ -82,15 +103,29 @@ export function useTingting() {
           if (dashboardResult.status === 'fulfilled') setDashboard(dashboardResult.value);
           if (groupsResult.status === 'rejected') throw groupsResult.reason;
           if (dashboardResult.status === 'rejected') throw dashboardResult.reason;
+          loadedHome.current = true;
         } else {
           setGroups([]);
           setDashboard(null);
           setTeams([]);
         }
       }
+      setRefreshFailed(false);
+      setConnectionDetails('');
     } catch (e) {
       if (request !== loadRequest.current) return;
+      if (e instanceof GraphqlConnectionError) {
+        const canShowLoadedData = e.isTemporary && (token ? loadedGroup.current : loadedHome.current);
+        setConnectionDetails(e.details);
+        setRefreshFailed(canShowLoadedData);
+        setConnectionFailed(!canShowLoadedData);
+        if (!canShowLoadedData) setError(err(e));
+        return;
+      }
+      setRefreshFailed(false);
+      setConnectionDetails('');
       if (token) {
+        loadedGroup.current = false;
         setG(null);
         setError(err(e));
       } else if (err(e).includes('UNAUTHORIZED')) {
@@ -102,6 +137,9 @@ export function useTingting() {
     }
   };
   useEffect(() => {
+    loadedGroup.current = false;
+    setRefreshFailed(false);
+    setConnectionDetails('');
     setG(null);
     setActivityEvents([]);
     setIdentity('');
@@ -118,7 +156,11 @@ export function useTingting() {
       if (!preview && !document.hidden && !busy && !modal && !teamModal) void load();
     };
     window.addEventListener('focus', focus);
-    return () => window.removeEventListener('focus', focus);
+    window.addEventListener('online', focus);
+    return () => {
+      window.removeEventListener('focus', focus);
+      window.removeEventListener('online', focus);
+    };
   }, [busy, modal, teamModal, token, preview]);
   const choose = (id: string) => {
     if (g) {
@@ -159,6 +201,14 @@ export function useTingting() {
       notify(translate("Không thể sao chép. Hãy sao chép URL trên trình duyệt."));
     }
   };
+  const copyConnectionDetails = async () => {
+    try {
+      await navigator.clipboard.writeText(connectionDetails);
+      notify(translate("Đã sao chép thông tin lỗi"));
+    } catch {
+      notify(translate("Không thể sao chép thông tin lỗi."));
+    }
+  };
   const allDebts: Debt[] = g ? (simplified ? g.simplifiedDebts : g.directDebts) : [],
     out = allDebts.filter((d) => d.fromId === identity),
     incoming = allDebts.filter((d) => d.toId === identity);
@@ -174,6 +224,11 @@ export function useTingting() {
   const logout = async () => {
     try {
       await api.logout();
+      loadedHome.current = false;
+      loadedGroup.current = false;
+      setG(null);
+      setActivityEvents([]);
+      setRefreshFailed(false);
       setViewer(null);
       setDashboard(null);
       setAdmin(false);
@@ -274,6 +329,10 @@ export function useTingting() {
     admin,
     setAdmin,
     loading,
+    refreshFailed,
+    connectionFailed,
+    connectionDetails,
+    copyConnectionDetails,
     error,
     setError,
     toast,

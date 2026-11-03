@@ -19,6 +19,12 @@ export default function App() {
   return (
     <div className={s.shell}>
       {(model.viewer || model.token) && <AppHeader model={model} />}
+      {model.refreshFailed && (
+        <div className={s.refreshNotice} role="status">
+          <span>{translate("Chưa thể cập nhật. Đang hiển thị dữ liệu đã tải.")}</span>
+          <RetryActions model={model} compact />
+        </div>
+      )}
       <CurrentScreen model={model} />
       <GroupModal model={model} />
       {model.toast && (
@@ -35,6 +41,15 @@ function CurrentScreen({ model }: { model: TingtingModel }) {
       <LoadingIndicator />
     </main>
   );
+  if (model.connectionFailed || (model.token && !model.g))
+    return (
+      <main className={s.page}>
+        <p role="alert" className={s.error}>
+          {model.error || translate("Không tìm thấy sổ chi tiêu")}
+        </p>
+        <RetryActions model={model} />
+      </main>
+    );
   if (model.path === '/admin/access')
     return model.viewer && model.admin ? (
       <AccessManager onChange={model.load} />
@@ -47,18 +62,25 @@ function CurrentScreen({ model }: { model: TingtingModel }) {
     return model.viewer ? <TeamsScreen model={model} /> : <LoginScreen model={model} />;
   if (!model.token)
     return model.viewer ? <DashboardScreen model={model} /> : <LoginScreen model={model} />;
-  if (!model.g)
-    return (
-      <main className={s.page}>
-        <p role="alert" className={s.error}>
-          {model.error || translate("Không tìm thấy sổ chi tiêu")}
-        </p>
-        <Button onClick={() => void model.load()}>{translate("Thử lại")}</Button>
-      </main>
-    );
+  if (!model.g) return null;
   return model.viewer || model.identity ? (
     <GroupScreen model={model} g={model.g} />
   ) : (
     <JoinScreen model={model} g={model.g} />
+  );
+}
+
+function RetryActions({ model, compact = false }: { model: TingtingModel; compact?: boolean }) {
+  return (
+    <div className={s.retryActions}>
+      <Button small={compact} variant={compact ? 'secondary' : undefined} onClick={() => void model.load()}>
+        {translate("Thử lại")}
+      </Button>
+      {model.connectionDetails && (
+        <Button small variant="secondary" onClick={() => void model.copyConnectionDetails()}>
+          {translate("Sao chép thông tin lỗi")}
+        </Button>
+      )}
+    </div>
   );
 }

@@ -1,6 +1,10 @@
 {
   "Không tìm thấy sổ chi tiêu": "Ledger not found",
   "Thử lại": "Try again",
+  "Sao chép thông tin lỗi": "Copy error details",
+  "Đã sao chép thông tin lỗi": "Error details copied",
+  "Không thể sao chép thông tin lỗi.": "Could not copy error details.",
+  "Chưa thể cập nhật. Đang hiển thị dữ liệu đã tải.": "Could not refresh. Showing previously loaded data.",
   "Đăng nhập": "Sign in",
   "Điều hướng chính": "Main navigation",
   "Sổ chi tiêu": "Ledgers",
