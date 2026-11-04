@@ -30,13 +30,7 @@ pub async fn list(store: &Store, actor: &Actor) -> Result<Vec<Team>, String> {
         .as_ref()
         .ok_or("UNAUTHORIZED: Vui lòng đăng nhập Google")?;
     let mut records = store.list::<StoredTeam>("TEAM").await?;
-    records.retain(|record| {
-        record.value.team.members.iter().any(|m| {
-            m.email
-                .as_deref()
-                .is_some_and(|email| email.eq_ignore_ascii_case(&viewer.email))
-        })
-    });
+    records.retain(|record| is_team_member(&record.value.team, &viewer.email));
     records.sort_by(|a, b| {
         a.value
             .team
@@ -112,26 +106,19 @@ pub async fn update(
         .read::<StoredTeam>("TEAM", id)
         .await?
         .ok_or("Không tìm thấy team")?;
-    if stored.value.owner_email != viewer.email.to_lowercase() {
-        return Err("FORBIDDEN: Chỉ người tạo team được chỉnh sửa".into());
+    if !is_team_member(&stored.value.team, &viewer.email) {
+        return Err("FORBIDDEN: Chỉ thành viên được chỉnh sửa hội nhóm".into());
     }
     if stored.value.team.version != version {
         return Err("CONFLICT: Team đã thay đổi. Hãy tải lại và thử lại.".into());
     }
     let members = services::members(members)?;
-    let email = viewer.email.to_lowercase();
-    if !members
-        .iter()
-        .any(|member| member.email.as_deref() == Some(email.as_str()))
-    {
-        return Err("Team phải luôn có bạn là thành viên".into());
-    }
     let team = Team {
         id: id.into(),
         name: services::text(&name, 120, true)?,
         version: version.checked_add(1).ok_or("Version exhausted")?,
         members,
-        owner_email: email,
+        owner_email: stored.value.owner_email.clone(),
     };
     let record = StoredTeam {
         team: team.clone(),
@@ -149,6 +136,15 @@ pub async fn update(
         ])
         .await?;
     Ok(team)
+}
+
+fn is_team_member(team: &Team, email: &str) -> bool {
+    team.members.iter().any(|member| {
+        member
+            .email
+            .as_deref()
+            .is_some_and(|member_email| member_email.eq_ignore_ascii_case(email))
+    })
 }
 
 pub async fn delete(store: &Store, actor: &Actor, id: &str, version: i32) -> Result<bool, String> {

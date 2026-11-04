@@ -108,6 +108,14 @@ export default function GroupModal({ model }: { model: TingtingModel }) {
       }
     >
       {alert}
+      {modal === 'create' && model.teamsError && (
+        <div className={s.error} role="alert">
+          <p>{model.teamsError}</p>
+          <Button type="button" variant="quiet" onClick={() => void model.load()}>
+            {translate("Thử lại")}
+          </Button>
+        </div>
+      )}
       {modal === 'create' && (
         <GroupForm
           formId={groupFormId}

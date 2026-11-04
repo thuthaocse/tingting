@@ -13,6 +13,7 @@ export function useTingting() {
   const sessionViewerId = useRef<string | undefined>(undefined);
   const token = path.match(/^\/g\/([^/]+)/)?.[1];
   const preview = path === '/design-system';
+  const teamsPage = path === '/teams';
   const [viewer, setViewer] = useState<Viewer | null>(null);
   const [googleEnabled, setGoogleEnabled] = useState(false);
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
@@ -150,7 +151,7 @@ export function useTingting() {
     return () => {
       loadRequest.current += 1;
     };
-  }, [token, preview]);
+  }, [token, preview, teamsPage]);
   useEffect(() => {
     const focus = () => {
       if (!preview && !document.hidden && !busy && !modal && !teamModal) void load();
@@ -275,7 +276,12 @@ export function useTingting() {
       const saved = teamToEdit
         ? await api.updateTeam(teamToEdit.id, teamToEdit.version, name, members)
         : await api.createTeam(name, members);
-      setTeams((current) => [saved, ...current.filter((team) => team.id !== saved.id)]);
+      setTeams((current) => {
+        const otherTeams = current.filter((team) => team.id !== saved.id);
+        return saved.members.some((member) => member.email?.toLowerCase() === viewer.email.toLowerCase())
+          ? [saved, ...otherTeams]
+          : otherTeams;
+      });
       closeTeamEditor();
       notify(teamToEdit ? translate("Đã cập nhật hội nhóm") : translate("Đã tạo hội nhóm"));
     } catch (error) {

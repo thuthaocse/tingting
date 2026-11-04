@@ -130,6 +130,24 @@ test('Vite renders shared design-system components and initial screens without a
     assert.match(header, /Thảo Trịnh/);
     assert.match(header, /href="\/"[^>]*>Sổ chi tiêu/);
     assert.match(header, /href="\/teams"[^>]*>Hội nhóm/);
+    const { default: TeamsScreen } = await server.ssrLoadModule('/src/features/teams/TeamsScreen.tsx');
+    const { default: TeamForm } = await server.ssrLoadModule('/src/features/teams/TeamForm.tsx');
+    const viewer = { id: 'member', name: 'An', email: 'an@example.com' };
+    const team = { id: 'team', name: 'Bạn bè', version: 1, ownerEmail: 'owner@example.com', members: [viewer, { id: 'owner', name: 'Bình', email: 'owner@example.com' }] };
+    const teamsScreen = renderToString(createElement(TeamsScreen, {
+      model: { viewer, teams: [team], teamsError: '', teamModal: false },
+    }));
+    assert.match(teamsScreen, /Quản lý/);
+    const memberForm = renderToString(createElement(TeamForm, { viewer, team, onSave: () => {}, onDelete: () => {}, onCancel: () => {} }));
+    assert.match(memberForm, /Lưu thay đổi/);
+    assert.doesNotMatch(memberForm, /Xóa hội nhóm/);
+    const { default: GroupForm } = await server.ssrLoadModule('/src/features/groups/GroupForm.tsx');
+    const createGroupForm = renderToString(createElement(GroupForm, {
+      viewer, teams: [team], busy: false, onSave: () => {},
+    }));
+    assert.match(createGroupForm, /Tìm hội nhóm hoặc thành viên/);
+    assert.match(createGroupForm, /Bạn bè/);
+    assert.match(createGroupForm, /Bình/);
     assert.doesNotMatch(header, /href="\/admin\/access"/);
     const adminHeader = renderToString(
       createElement(AppHeader, { model: { viewer: { name: 'Thảo Trịnh' }, admin: true, path: '/admin/access', logout: () => {} } }),

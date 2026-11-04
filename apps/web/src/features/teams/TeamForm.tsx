@@ -24,15 +24,11 @@ export default function TeamForm({
   const [members, setMembers] = useState<Member[]>(
     team?.members || [{ id: viewer.id, name: viewer.name, email: viewer.email }],
   );
-  const isTeamEmpty = Boolean(team && !members.length);
+  const isTeamOwner = team?.ownerEmail.toLowerCase() === viewer.email.toLowerCase();
   return (
     <Form
       onSubmit={(event) => {
         event.preventDefault();
-        if (isTeamEmpty) {
-          onDelete();
-          return;
-        }
         const data = new FormData(event.currentTarget);
         onSave(String(data.get('name') || ''), members);
       }}
@@ -51,8 +47,8 @@ export default function TeamForm({
         <span>{members.length} {translate("người")}</span>
       </div>
       {members.map((member, index) => {
-        const isOwner = isViewerMember(member, viewer);
-        const canRemove = team ? !isOwner || members.length === 1 : !isOwner;
+        const isViewer = isViewerMember(member, viewer);
+        const canRemove = members.length > 1 && (Boolean(team) || !isViewer);
         return (
           <div className={s.memberRow} key={member.id}>
             <Input
@@ -73,7 +69,7 @@ export default function TeamForm({
               aria-label={`${translate("Email thành viên")} ${index + 1}`}
               placeholder={translate("Email (không bắt buộc)")}
               type="email"
-              disabled={isOwner}
+              disabled={!team && isViewer}
               value={member.email || ''}
               onChange={(event) =>
                 setMembers((items) =>
@@ -107,19 +103,16 @@ export default function TeamForm({
       <div className={s.formActions}>
         <Button
           type="button"
-          className={isTeamEmpty ? s.fullWidthAction : undefined}
           variant="secondary"
           disabled={busy}
           onClick={onCancel}
         >
           {translate("Hủy")}
         </Button>
-        {!isTeamEmpty && (
-          <Button loading={busy} disabled={busy}>
-            {busy ? translate("Đang lưu…") : team ? translate("Lưu thay đổi") : translate("Tạo hội nhóm")}
-          </Button>
-        )}
-        {team && (
+        <Button loading={busy} disabled={busy}>
+          {busy ? translate("Đang lưu…") : team ? translate("Lưu thay đổi") : translate("Tạo hội nhóm")}
+        </Button>
+        {team && isTeamOwner && (
           <Button
             type="button"
             className={s.fullWidthAction}

@@ -63,6 +63,63 @@ test('GraphQL workflow: permissions, conservation, partial repayment, conflicts,
   );
   assert.match(createDenied.errors[0].message, /UNAUTHORIZED/);
   cookie = process.env.TEST_ADMIN_COOKIE;
+  const teamMember = { id: randomUUID(), name: 'Invited member', email: `  ${process.env.TEST_MEMBER_EMAIL.toUpperCase()}  ` };
+  const teamFields = 'id name version ownerEmail members { id name email }';
+  const team = result(await request(
+    `mutation($name:String!,$members:[MemberInput!]!){createTeam(name:$name,members:$members){${teamFields}}}`,
+    { name: `Team ${randomUUID()}`, members: [teamMember] },
+  ), 'createTeam');
+  cookie = process.env.TEST_USER_COOKIE;
+  const invitedTeams = result(await request(`query { teams { ${teamFields} } }`), 'teams');
+  assert.ok(invitedTeams.some((entry) => entry.id === team.id), 'A signed-in member sees the team added by another account');
+  const invitedTeam = invitedTeams.find((entry) => entry.id === team.id);
+  const newGroup = result(await request(`mutation($input:CreateGroupInput!){createGroup(input:$input){${fields}}}`, {
+    input: { name: `From team ${randomUUID()}`, description: '', members: invitedTeam.members },
+  }), 'createGroup');
+  assert.deepEqual(newGroup.members.map((member) => member.id).sort(), invitedTeam.members.map((member) => member.id).sort());
+  const updateTeam = `mutation($id:String!,$version:Int!,$name:String!,$members:[MemberInput!]!){updateTeam(id:$id,version:$version,name:$name,members:$members){${teamFields}}}`;
+  const updatedTeam = result(await request(updateTeam, {
+    id: team.id, version: team.version, name: 'Updated by member', members: team.members,
+  }), 'updateTeam');
+  assert.equal(updatedTeam.name, 'Updated by member');
+  assert.equal(updatedTeam.ownerEmail, team.ownerEmail);
+  const staleEdit = await request(updateTeam, {
+    id: team.id, version: team.version, name: team.name, members: team.members,
+  });
+  assert.match(staleEdit.errors[0].message, /CONFLICT/);
+  const forbiddenDelete = await request('mutation($id:String!,$version:Int!){deleteTeam(id:$id,version:$version)}', { id: team.id, version: updatedTeam.version });
+  assert.match(forbiddenDelete.errors[0].message, /FORBIDDEN/);
+  const addedMember = { id: randomUUID(), name: 'New member', email: 'new-member@example.com' };
+  const expandedTeam = result(await request(updateTeam, {
+    id: team.id, version: updatedTeam.version, name: team.name,
+    members: [...updatedTeam.members, addedMember],
+  }), 'updateTeam');
+  const withoutOwner = result(await request(updateTeam, {
+    id: team.id, version: expandedTeam.version, name: team.name,
+    members: expandedTeam.members.filter((member) => member.email !== team.ownerEmail),
+  }), 'updateTeam');
+  cookie = process.env.TEST_ADMIN_COOKIE;
+  assert.ok(!result(await request(`query { teams { ${teamFields} } }`), 'teams').some((entry) => entry.id === team.id));
+  const ownerDenied = await request(updateTeam, {
+    id: team.id, version: withoutOwner.version, name: team.name, members: expandedTeam.members,
+  });
+  assert.match(ownerDenied.errors[0].message, /FORBIDDEN/);
+  cookie = process.env.TEST_USER_COOKIE;
+  const restoredOwner = result(await request(updateTeam, {
+    id: team.id, version: withoutOwner.version, name: team.name, members: expandedTeam.members,
+  }), 'updateTeam');
+  const withoutInvitee = result(await request(updateTeam, {
+    id: team.id, version: restoredOwner.version, name: team.name,
+    members: restoredOwner.members.filter((member) => member.id !== teamMember.id),
+  }), 'updateTeam');
+  const teamsAfterRemoval = result(await request(`query { teams { ${teamFields} } }`), 'teams');
+  assert.ok(!teamsAfterRemoval.some((entry) => entry.id === team.id));
+  const forbiddenEdit = await request(updateTeam, {
+    id: team.id, version: withoutInvitee.version, name: team.name, members: updatedTeam.members,
+  });
+  assert.match(forbiddenEdit.errors[0].message, /FORBIDDEN/);
+  cookie = process.env.TEST_ADMIN_COOKIE;
+  result(await request('mutation($id:String!,$version:Int!){deleteTeam(id:$id,version:$version)}', { id: team.id, version: withoutInvitee.version }), 'deleteTeam');
   const memberPrefix = randomUUID().slice(0, -1);
   const members = ['Linh Nguyễn', 'Minh Trần', 'An Phạm', 'Thảo Lê'].map((name, index) => ({
     id: memberPrefix + index,

@@ -25,7 +25,7 @@ export default function TeamsScreen({ model }: { model: TingtingModel }) {
         {model.teams.map((team) => (
           <article className={s.card} key={team.id}>
             <div className={s.cardHeading}><div><h2>{team.name}</h2><p>{team.members.length} {translate("thành viên")}</p></div>
-              {team.ownerEmail.toLowerCase() === model.viewer?.email.toLowerCase() && <Button variant="secondary" small onClick={() => model.openTeamEditor(team)}>{translate("Quản lý")}</Button>}
+              <Button variant="secondary" small onClick={() => model.openTeamEditor(team)}>{translate("Quản lý")}</Button>
             </div>
             <ul>{team.members.map((member) => <li key={member.id}><span>{member.name}</span><small>{member.email}</small></li>)}</ul>
           </article>

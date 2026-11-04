@@ -1,6 +1,6 @@
 import { t as translate } from '../../app/i18n/language';
 import { useState } from 'react';
-import { Button, Field, Input } from '@tingting/design-system';
+import { Button, Field, Input, searchKey } from '@tingting/design-system';
 import type { Group, Member } from '../../types';
 import type { Viewer } from '../../api';
 import type { Team } from '../../api';
@@ -27,11 +27,11 @@ export default function GroupForm({
     ],
   );
   const [teamSearch, setTeamSearch] = useState('');
-  const searchKey = teamSearch.trim().toLocaleLowerCase('vi');
+  const query = searchKey(teamSearch);
   const matchingTeams = teams.filter(
     (team) =>
-      team.name.toLocaleLowerCase('vi').includes(searchKey) ||
-      team.members.some((member) => member.name.toLocaleLowerCase('vi').includes(searchKey)),
+      searchKey(team.name).includes(query) ||
+      team.members.some((member) => matchesMember(member, query)),
   );
   return (
     <Form
@@ -91,21 +91,19 @@ export default function GroupForm({
           </Field>
           <div className={s.teamList}>
             {matchingTeams.map((team) => {
-              const teamMatchesSearch = team.name.toLocaleLowerCase('vi').includes(searchKey);
+              const teamMatchesSearch = searchKey(team.name).includes(query);
               const visibleMembers =
-                searchKey && !teamMatchesSearch
-                  ? team.members.filter((member) =>
-                      member.name.toLocaleLowerCase('vi').includes(searchKey),
-                    )
+                query && !teamMatchesSearch
+                  ? team.members.filter((member) => matchesMember(member, query))
                   : team.members;
               return (
-                <details key={team.id} className={s.teamOption}>
+                <details key={team.id} className={s.teamOption} open={query ? true : undefined}>
                   <summary>
                     <span>{team.name}</span>
                     <small>{team.members.length} {translate("thành viên")}</small>
                   </summary>
                   <div className={s.teamMembers}>
-                    {!searchKey || teamMatchesSearch ? (
+                    {!query || teamMatchesSearch ? (
                       <button
                         type="button"
                         className={s.addTeamButton}
@@ -187,6 +185,10 @@ export default function GroupForm({
       )}
     </Form>
   );
+}
+
+function matchesMember(member: Member, query: string): boolean {
+  return searchKey(member.name).includes(query) || searchKey(member.email || '').includes(query);
 }
 
 function memberKey(member: Member): string {
